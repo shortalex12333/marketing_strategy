@@ -616,48 +616,74 @@ export default function Page() {
 
                     {d.format === "carousel" && (
                       <div style={{ marginTop: 14 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
                           <h3 style={{ margin: 0 }}>Carousel · {d.slides?.length || 0} slides · doc title: <span className="mono">{d.doc_title}</span></h3>
-                          <button className="ghost" onClick={() => setExpandedDraft(expandedDraft === d.id ? null : d.id)}>
-                            {expandedDraft === d.id ? "Collapse" : "Expand slides"}
-                          </button>
+                          <div style={{ display: "flex", gap: 8 }}>
+                            {d.pdf_url && (
+                              <a href={d.pdf_url} target="_blank" rel="noopener noreferrer">
+                                <button className="ghost">Download PDF</button>
+                              </a>
+                            )}
+                            <button className="ghost" onClick={() => setExpandedDraft(expandedDraft === d.id ? null : d.id)}>
+                              {expandedDraft === d.id ? "Hide slides" : "Show slides"}
+                            </button>
+                          </div>
                         </div>
                         {d.render_status && (
-                          <p className="small" style={{ color: "var(--amber)" }}>Render: {d.render_status}</p>
+                          <p className="small" style={{ color: d.render_status.includes("rendered") ? "var(--green)" : "var(--amber)" }}>
+                            Render: {d.render_status}
+                          </p>
                         )}
-                        {d.pdf_url && (
-                          <p className="small">PDF when rendered: <span className="mono">{d.pdf_url}</span></p>
-                        )}
-                        {expandedDraft === d.id && d.slides && (
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10, marginTop: 12 }}>
-                            {d.slides.map((s) => (
-                              <div key={s.n} style={{
-                                background: s.mode === "dark" ? "var(--bg-0)" : "var(--bg-3)",
-                                color: s.mode === "dark" ? "var(--text-0)" : "var(--text-0)",
-                                border: "1px solid var(--border)",
-                                borderRadius: 6,
-                                padding: 14,
-                                minHeight: 140,
-                                fontSize: 12,
-                              }}>
-                                <div className="mono" style={{ fontSize: 10, color: "var(--text-2)", marginBottom: 8 }}>
-                                  Slide {s.n} · {s.mode}{s.bg_variant ? ` · ${s.bg_variant}` : ""}{s.card ? ` · card:${s.card}` : ""}{s.type ? ` · ${s.type}` : ""}
-                                </div>
-                                {s.q ? (
-                                  <>
-                                    <div style={{ fontStyle: "italic", marginBottom: 6 }}>&ldquo;{s.q}&rdquo;</div>
-                                    <div className="small" style={{ color: "var(--text-2)" }}>{s.c}</div>
-                                  </>
-                                ) : (
-                                  <>
-                                    <div style={{ fontWeight: 500, marginBottom: 6, lineHeight: 1.3 }}>{s.h}</div>
-                                    {s.b && <div className="small" style={{ color: "var(--text-1)", lineHeight: 1.4 }}>{s.b}</div>}
-                                  </>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        {expandedDraft === d.id && d.slides && (() => {
+                          const slug = d.pdf_url ? d.pdf_url.replace("/carousels/", "").replace(".pdf", "") : null;
+                          return (
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10, marginTop: 12 }}>
+                              {d.slides.map((s) => {
+                                const imgUrl = slug ? `/carousels/${slug}/slide_${String(s.n).padStart(2, "0")}.png` : null;
+                                return (
+                                  <div key={s.n} style={{
+                                    background: "var(--bg-0)",
+                                    border: "1px solid var(--border)",
+                                    borderRadius: 6,
+                                    overflow: "hidden",
+                                  }}>
+                                    {imgUrl ? (
+                                      <a href={imgUrl} target="_blank" rel="noopener noreferrer">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={imgUrl} alt={`Slide ${s.n}: ${s.h || s.q || ""}`} style={{ width: "100%", display: "block" }} />
+                                      </a>
+                                    ) : (
+                                      <div style={{
+                                        background: s.mode === "dark" ? "var(--bg-0)" : "var(--bg-3)",
+                                        padding: 14,
+                                        minHeight: 140,
+                                        fontSize: 12,
+                                      }}>
+                                        <div className="mono" style={{ fontSize: 10, color: "var(--text-2)", marginBottom: 8 }}>
+                                          Slide {s.n} · {s.mode}
+                                        </div>
+                                        {s.q ? (
+                                          <>
+                                            <div style={{ fontStyle: "italic", marginBottom: 6 }}>&ldquo;{s.q}&rdquo;</div>
+                                            <div className="small">{s.c}</div>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <div style={{ fontWeight: 500, marginBottom: 6, lineHeight: 1.3 }}>{s.h}</div>
+                                            {s.b && <div className="small" style={{ lineHeight: 1.4 }}>{s.b}</div>}
+                                          </>
+                                        )}
+                                      </div>
+                                    )}
+                                    <div className="mono" style={{ fontSize: 10, color: "var(--text-2)", padding: "6px 10px", borderTop: "1px solid var(--border)" }}>
+                                      Slide {s.n} · {s.mode}{s.bg_variant ? ` · ${s.bg_variant}` : ""}{s.card ? ` · card:${s.card}` : ""}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
 
