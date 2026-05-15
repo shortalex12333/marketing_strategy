@@ -7,7 +7,48 @@ import type {
   CaptureRow,
 } from "@/lib/types";
 
-type Tab = "dashboard" | "posts" | "analytics" | "bank" | "briefs" | "drafts" | "schedule";
+type Tab = "dashboard" | "posts" | "analytics" | "bank" | "briefs" | "drafts" | "schedule" | "roadmap";
+
+interface RoadmapSlide {
+  n: number;
+  mode: "dark" | "light";
+  h?: string;
+  b?: string;
+  card?: string;
+  atmosphere?: string;
+  emphasis?: string;
+  bg_variant?: string;
+  lightVariant?: string;
+}
+
+interface RoadmapCarousel {
+  slot: string;
+  id: string;
+  bank_ref: string;
+  hook: string;
+  pillar: string;
+  usp: string;
+  targets: string[];
+  scenario: string;
+  proposed_day: string;
+  atmosphere: string;
+  emphasis_word: string;
+  why_engages: string;
+  anti_sameness: string;
+  caption: string;
+  slides: RoadmapSlide[];
+}
+
+interface RoadmapResponse {
+  version: string;
+  wave: number;
+  format: string;
+  cadence: string;
+  source: string;
+  status: string;
+  moodboard_atmospheres: Record<string, string>;
+  carousels: RoadmapCarousel[];
+}
 
 interface DraftSlide {
   n: number;
@@ -162,7 +203,9 @@ export default function Page() {
   const [latestBrief, setLatestBrief] = useState<BriefResponse | null>(null);
   const [drafts, setDrafts] = useState<DraftsResponse | null>(null);
   const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
+  const [roadmap, setRoadmap] = useState<RoadmapResponse | null>(null);
   const [expandedDraft, setExpandedDraft] = useState<string | null>(null);
+  const [expandedRoadmap, setExpandedRoadmap] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; kind: "success" | "error" } | null>(null);
 
   const [url, setUrl] = useState("");
@@ -208,6 +251,11 @@ export default function Page() {
     if (r.ok) setSchedule(await r.json());
   }, []);
 
+  const loadRoadmap = useCallback(async () => {
+    const r = await fetch("/api/roadmap");
+    if (r.ok) setRoadmap(await r.json());
+  }, []);
+
   useEffect(() => {
     loadState();
     loadPosts();
@@ -226,7 +274,8 @@ export default function Page() {
       if (!schedule) loadSchedule();
       if (!drafts) loadDrafts();
     }
-  }, [tab, loadAnalytics, loadBank, loadDrafts, loadSchedule, drafts, schedule]);
+    if (tab === "roadmap" && !roadmap) loadRoadmap();
+  }, [tab, loadAnalytics, loadBank, loadDrafts, loadSchedule, loadRoadmap, drafts, schedule, roadmap]);
 
   const handleDraftSaved = (id: string, patch: { caption?: string; body?: string }) => {
     if (!drafts) return;
@@ -333,7 +382,7 @@ export default function Page() {
       </header>
 
       <nav className="tabs">
-        {(["dashboard", "schedule", "posts", "analytics", "bank", "briefs", "drafts"] as Tab[]).map((t) => (
+        {(["dashboard", "schedule", "roadmap", "posts", "analytics", "bank", "briefs", "drafts"] as Tab[]).map((t) => (
           <button key={t} className={`tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -596,6 +645,140 @@ export default function Page() {
               </>
             ) : (
               <div className="panel"><div className="empty">Loading drafts…</div></div>
+            )}
+          </>
+        )}
+
+        {tab === "roadmap" && (
+          <>
+            {roadmap ? (
+              <>
+                <div className="panel">
+                  <h2>Wave {roadmap.wave} · Carousel Roadmap · {roadmap.status}</h2>
+                  <p className="small"><strong>Format:</strong> {roadmap.format}</p>
+                  <p className="small"><strong>Cadence:</strong> {roadmap.cadence}</p>
+                  <p className="small"><strong>Source:</strong> <span className="mono">{roadmap.source}</span></p>
+                  <details style={{ marginTop: 14 }}>
+                    <summary className="small" style={{ cursor: "pointer" }}>Moodboard atmospheres</summary>
+                    <ul className="small" style={{ marginTop: 8 }}>
+                      {Object.entries(roadmap.moodboard_atmospheres).map(([k, v]) => (
+                        <li key={k}><strong style={{ color: k === "red" ? "var(--red)" : k === "amber" ? "var(--amber)" : k === "teal" ? "var(--teal)" : k === "green" ? "var(--green)" : "var(--text-1)" }}>{k}:</strong> {v}</li>
+                      ))}
+                    </ul>
+                  </details>
+                </div>
+
+                <div className="panel">
+                  <h2>The 12 · click any row to expand the full storyline</h2>
+                  {roadmap.carousels.map((c) => {
+                    const isOpen = expandedRoadmap === c.id;
+                    const atmoColours = (s: string) =>
+                      s.includes("red") ? "var(--red)" :
+                      s.includes("amber") ? "var(--amber)" :
+                      s.includes("teal") ? "var(--teal)" :
+                      s.includes("green") ? "var(--green)" : "var(--text-2)";
+                    return (
+                      <div key={c.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                        <div
+                          onClick={() => setExpandedRoadmap(isOpen ? null : c.id)}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "70px 110px 200px 1fr 140px",
+                            gap: 12,
+                            padding: "14px 4px",
+                            cursor: "pointer",
+                            alignItems: "center",
+                          }}
+                        >
+                          <div className="mono" style={{ color: isOpen ? "var(--teal)" : "var(--text-1)" }}>
+                            {isOpen ? "▼ " : "▶ "}{c.slot}
+                          </div>
+                          <div className="mono small">{c.proposed_day}</div>
+                          <div className="small mono">{c.usp}</div>
+                          <div style={{ fontSize: 13 }}>
+                            {c.hook.length > 65 ? c.hook.slice(0, 65) + "…" : c.hook}
+                          </div>
+                          <div className="small mono" style={{ color: atmoColours(c.atmosphere) }}>
+                            {c.atmosphere.split(" ")[0]}
+                          </div>
+                        </div>
+                        {isOpen && (
+                          <div style={{ padding: "16px 4px 28px", background: "var(--bg-0)", borderTop: "1px solid var(--border)" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 16 }}>
+                              <div>
+                                <h3>Why it engages</h3>
+                                <p className="small">{c.why_engages}</p>
+                                <h3 style={{ marginTop: 14 }}>Anti-sameness</h3>
+                                <p className="small">{c.anti_sameness}</p>
+                              </div>
+                              <div>
+                                <h3>Targets · scenario</h3>
+                                <p className="small mono">{c.targets.join(" · ")}</p>
+                                <p className="small">{c.scenario}</p>
+                                <h3 style={{ marginTop: 14 }}>Atmosphere · emphasis</h3>
+                                <p className="small mono" style={{ color: atmoColours(c.atmosphere) }}>{c.atmosphere}</p>
+                                <p className="small">{c.emphasis_word}</p>
+                                <p className="small mono" style={{ color: "var(--text-2)", marginTop: 8 }}>bank: {c.bank_ref}</p>
+                              </div>
+                            </div>
+
+                            <h3 style={{ marginBottom: 10 }}>9-slide arc</h3>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10, marginBottom: 16 }}>
+                              {c.slides.map((s) => {
+                                const cardBg = s.mode === "dark" ? "var(--bg-1)" : "var(--bg-3)";
+                                const atmoColour =
+                                  s.atmosphere === "red" ? "rgba(192,80,58,0.25)" :
+                                  s.atmosphere === "amber" ? "rgba(196,137,59,0.25)" :
+                                  s.atmosphere === "teal" ? "rgba(90,171,204,0.25)" :
+                                  s.atmosphere === "green" ? "rgba(74,148,104,0.25)" :
+                                  null;
+                                return (
+                                  <div key={s.n} style={{
+                                    background: cardBg,
+                                    border: "1px solid var(--border)",
+                                    borderLeft: atmoColour ? `3px solid ${atmoColour.replace("0.25", "1")}` : "1px solid var(--border)",
+                                    borderRadius: 6,
+                                    padding: 14,
+                                    minHeight: 130,
+                                    fontSize: 12,
+                                    position: "relative",
+                                  }}>
+                                    {atmoColour && (
+                                      <div style={{
+                                        position: "absolute", top: 0, right: 0, bottom: 0, left: 0,
+                                        background: `radial-gradient(ellipse at 50% 60%, ${atmoColour} 0%, transparent 70%)`,
+                                        pointerEvents: "none",
+                                      }} />
+                                    )}
+                                    <div className="mono" style={{ fontSize: 10, color: "var(--text-2)", marginBottom: 8, position: "relative" }}>
+                                      Slide {s.n} · {s.mode}
+                                      {s.atmosphere && <span style={{ color: atmoColours(s.atmosphere), marginLeft: 6 }}>· {s.atmosphere}</span>}
+                                      {s.card && <span style={{ marginLeft: 6 }}>· card:{s.card}</span>}
+                                      {s.lightVariant && <span style={{ marginLeft: 6 }}>· {s.lightVariant}</span>}
+                                    </div>
+                                    <div style={{ position: "relative", fontWeight: 500, lineHeight: 1.3, marginBottom: 6 }}>{s.h}</div>
+                                    {s.b && <div className="small" style={{ position: "relative", lineHeight: 1.4 }}>{s.b}</div>}
+                                    {s.emphasis && (
+                                      <div className="small mono" style={{ position: "relative", marginTop: 6, color: "var(--teal)", fontStyle: "italic" }}>
+                                        emph: <em>{s.emphasis}</em>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            <h3 style={{ marginBottom: 8 }}>Caption</h3>
+                            <pre style={{ whiteSpace: "pre-wrap", fontFamily: "var(--sans)", background: "var(--bg-1)", padding: 14, borderRadius: 4, fontSize: 12, lineHeight: 1.5, color: "var(--text-1)" }}>{c.caption}</pre>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="panel"><div className="empty">Loading roadmap…</div></div>
             )}
           </>
         )}
