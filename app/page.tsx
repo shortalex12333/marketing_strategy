@@ -7,7 +7,80 @@ import type {
   CaptureRow,
 } from "@/lib/types";
 
-type Tab = "dashboard" | "posts" | "analytics" | "bank" | "briefs" | "drafts";
+type Tab = "dashboard" | "posts" | "analytics" | "bank" | "briefs" | "drafts" | "schedule";
+
+interface DraftSlide {
+  n: number;
+  mode: "dark" | "light";
+  h?: string;
+  b?: string;
+  q?: string;
+  c?: string;
+  type?: string;
+  card?: string;
+  bg_variant?: string;
+}
+
+interface Draft {
+  id: string;
+  bank_id: string;
+  ord: number;
+  format: string;
+  hook: string;
+  body?: string;
+  doc_title?: string;
+  usp: string;
+  targets: string[];
+  scenario: string;
+  posting_day_proposal: string;
+  posting_time_utc: string;
+  char_count?: number;
+  rationale: string;
+  anchor: string;
+  approval_status: string;
+  render_required: boolean;
+  render_status?: string;
+  pdf_url?: string;
+  caption?: string;
+  alt_text?: string;
+  slides?: DraftSlide[];
+}
+
+interface DraftsResponse {
+  version: string;
+  source: string;
+  fix_log: string[];
+  drafts: Draft[];
+}
+
+interface ScheduleItem {
+  post_id: string;
+  bank_id: string;
+  day: string;
+  date: string;
+  time_utc: string;
+  hook: string;
+  format: string;
+  rationale: string;
+  approval_status: string;
+}
+
+interface Checkpoint {
+  date: string;
+  label: string;
+  action: string;
+}
+
+interface ScheduleResponse {
+  version: string;
+  phase: string;
+  cadence_rule: string;
+  primary_account: string;
+  company_page_role: string;
+  calendar: ScheduleItem[];
+  checkpoints: Checkpoint[];
+  next_brief_due: string;
+}
 
 interface AppState {
   posts_count: number;
@@ -87,6 +160,9 @@ export default function Page() {
   const [uspFilter, setUspFilter] = useState("");
   const [briefMode, setBriefMode] = useState<"recovery" | "ramp" | "daily">("recovery");
   const [latestBrief, setLatestBrief] = useState<BriefResponse | null>(null);
+  const [drafts, setDrafts] = useState<DraftsResponse | null>(null);
+  const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
+  const [expandedDraft, setExpandedDraft] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; kind: "success" | "error" } | null>(null);
 
   const [url, setUrl] = useState("");
@@ -122,6 +198,16 @@ export default function Page() {
     if (r.ok) setBank(await r.json());
   }, []);
 
+  const loadDrafts = useCallback(async () => {
+    const r = await fetch("/api/drafts");
+    if (r.ok) setDrafts(await r.json());
+  }, []);
+
+  const loadSchedule = useCallback(async () => {
+    const r = await fetch("/api/schedule");
+    if (r.ok) setSchedule(await r.json());
+  }, []);
+
   useEffect(() => {
     loadState();
     loadPosts();
@@ -135,7 +221,9 @@ export default function Page() {
   useEffect(() => {
     if (tab === "analytics") loadAnalytics();
     if (tab === "bank") loadBank();
-  }, [tab, loadAnalytics, loadBank]);
+    if (tab === "drafts" && !drafts) loadDrafts();
+    if (tab === "schedule" && !schedule) loadSchedule();
+  }, [tab, loadAnalytics, loadBank, loadDrafts, loadSchedule, drafts, schedule]);
 
   const submitPost = async () => {
     if (!url.trim()) {
@@ -232,7 +320,7 @@ export default function Page() {
       </header>
 
       <nav className="tabs">
-        {(["dashboard", "posts", "analytics", "bank", "briefs", "drafts"] as Tab[]).map((t) => (
+        {(["dashboard", "schedule", "posts", "analytics", "bank", "briefs", "drafts"] as Tab[]).map((t) => (
           <button key={t} className={`tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -472,15 +560,182 @@ export default function Page() {
         )}
 
         {tab === "drafts" && (
-          <div className="panel">
-            <h2>First-5 post drafts · 2026-05-14</h2>
-            <p className="small">
-              The full drafts file lives on your machine at <span className="mono">~/Documents/CelesteOS-Teams/Social_Presence/CELESTE/first_5_posts_drafts_2026_05_14.md</span>.
-            </p>
-            <p className="small">
-              This dashboard shows live operational state. For canonical draft content, open the file locally.
-            </p>
-          </div>
+          <>
+            {drafts ? (
+              <>
+                <div className="panel">
+                  <h2>First-5 post drafts · {drafts.version}</h2>
+                  <p className="small">Source: <span className="mono">{drafts.source}</span></p>
+                  {drafts.fix_log && drafts.fix_log.length > 0 && (
+                    <details style={{ marginTop: 10 }}>
+                      <summary className="small" style={{ cursor: "pointer" }}>Fix log ({drafts.fix_log.length} review fixes applied)</summary>
+                      <ul className="small" style={{ marginTop: 8 }}>
+                        {drafts.fix_log.map((f, i) => <li key={i}>{f}</li>)}
+                      </ul>
+                    </details>
+                  )}
+                </div>
+                {drafts.drafts.map((d) => (
+                  <div className="panel" key={d.id}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                      <div style={{ flex: 1 }}>
+                        <div className="mono" style={{ color: "var(--teal)", fontSize: 12 }}>
+                          Post {d.ord} · {d.bank_id} · {d.format}
+                        </div>
+                        <h2 style={{ marginTop: 8, marginBottom: 6, textTransform: "none", letterSpacing: 0, fontSize: 16 }}>{d.hook}</h2>
+                        <div className="small" style={{ marginBottom: 12 }}>
+                          {d.posting_day_proposal} · {fmtDate(d.posting_time_utc)} UTC · {d.format}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <span className="tag" style={{ background: "var(--bg-3)", color: "var(--amber)", borderColor: "rgba(200,168,92,0.4)" }}>
+                          {d.approval_status}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginTop: 14 }}>
+                      <div>
+                        <h3>Rationale</h3>
+                        <p className="small">{d.rationale}</p>
+                      </div>
+                      <div>
+                        <h3>Targets · Scenario</h3>
+                        <p className="small mono">{d.targets.join(" · ")}</p>
+                        <p className="small">{d.scenario}</p>
+                        <p className="small mono" style={{ marginTop: 8, color: "var(--text-2)" }}>{d.anchor}</p>
+                      </div>
+                    </div>
+
+                    {d.format === "long-form text" && d.body && (
+                      <div style={{ marginTop: 14 }}>
+                        <h3>Body ({d.char_count} chars)</h3>
+                        <pre style={{ whiteSpace: "pre-wrap", fontFamily: "var(--sans)", background: "var(--bg-0)", padding: 14, borderRadius: 4, fontSize: 13, lineHeight: 1.5, color: "var(--text-0)" }}>{d.body}</pre>
+                      </div>
+                    )}
+
+                    {d.format === "carousel" && (
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                          <h3 style={{ margin: 0 }}>Carousel · {d.slides?.length || 0} slides · doc title: <span className="mono">{d.doc_title}</span></h3>
+                          <button className="ghost" onClick={() => setExpandedDraft(expandedDraft === d.id ? null : d.id)}>
+                            {expandedDraft === d.id ? "Collapse" : "Expand slides"}
+                          </button>
+                        </div>
+                        {d.render_status && (
+                          <p className="small" style={{ color: "var(--amber)" }}>Render: {d.render_status}</p>
+                        )}
+                        {d.pdf_url && (
+                          <p className="small">PDF when rendered: <span className="mono">{d.pdf_url}</span></p>
+                        )}
+                        {expandedDraft === d.id && d.slides && (
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10, marginTop: 12 }}>
+                            {d.slides.map((s) => (
+                              <div key={s.n} style={{
+                                background: s.mode === "dark" ? "var(--bg-0)" : "var(--bg-3)",
+                                color: s.mode === "dark" ? "var(--text-0)" : "var(--text-0)",
+                                border: "1px solid var(--border)",
+                                borderRadius: 6,
+                                padding: 14,
+                                minHeight: 140,
+                                fontSize: 12,
+                              }}>
+                                <div className="mono" style={{ fontSize: 10, color: "var(--text-2)", marginBottom: 8 }}>
+                                  Slide {s.n} · {s.mode}{s.bg_variant ? ` · ${s.bg_variant}` : ""}{s.card ? ` · card:${s.card}` : ""}{s.type ? ` · ${s.type}` : ""}
+                                </div>
+                                {s.q ? (
+                                  <>
+                                    <div style={{ fontStyle: "italic", marginBottom: 6 }}>&ldquo;{s.q}&rdquo;</div>
+                                    <div className="small" style={{ color: "var(--text-2)" }}>{s.c}</div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div style={{ fontWeight: 500, marginBottom: 6, lineHeight: 1.3 }}>{s.h}</div>
+                                    {s.b && <div className="small" style={{ color: "var(--text-1)", lineHeight: 1.4 }}>{s.b}</div>}
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {d.caption && (
+                      <div style={{ marginTop: 14 }}>
+                        <h3>Caption</h3>
+                        <pre style={{ whiteSpace: "pre-wrap", fontFamily: "var(--sans)", background: "var(--bg-0)", padding: 14, borderRadius: 4, fontSize: 12, lineHeight: 1.5, color: "var(--text-1)" }}>{d.caption}</pre>
+                      </div>
+                    )}
+
+                    {d.alt_text && (
+                      <div style={{ marginTop: 14 }}>
+                        <h3>Document-level alt text</h3>
+                        <p className="small" style={{ lineHeight: 1.5 }}>{d.alt_text}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </>
+            ) : (
+              <div className="panel"><div className="empty">Loading drafts…</div></div>
+            )}
+          </>
+        )}
+
+        {tab === "schedule" && (
+          <>
+            {schedule ? (
+              <>
+                <div className="panel">
+                  <h2>{schedule.phase}</h2>
+                  <p className="small"><strong>Cadence rule:</strong> {schedule.cadence_rule}</p>
+                  <p className="small"><strong>Primary account:</strong> {schedule.primary_account}</p>
+                  <p className="small"><strong>Company page role:</strong> {schedule.company_page_role}</p>
+                  <p className="small" style={{ marginTop: 12 }}><strong>Next brief due:</strong> {schedule.next_brief_due}</p>
+                </div>
+
+                <div className="panel">
+                  <h2>Calendar · the proposed 5</h2>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Day</th><th>Date</th><th>Time</th><th>Format</th><th>Hook</th><th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {schedule.calendar.map((item) => (
+                        <tr key={item.post_id}>
+                          <td>{item.day}</td>
+                          <td className="mono">{item.date}</td>
+                          <td className="mono">{item.time_utc} UTC</td>
+                          <td className="small">{item.format}</td>
+                          <td>{item.hook.length > 60 ? item.hook.slice(0, 60) + "…" : item.hook}</td>
+                          <td>
+                            <span className="tag" style={{ color: "var(--amber)", borderColor: "rgba(200,168,92,0.4)" }}>
+                              {item.approval_status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="panel">
+                  <h2>Recovery checkpoints</h2>
+                  {schedule.checkpoints.map((cp) => (
+                    <div key={cp.date} style={{ padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
+                      <div className="mono" style={{ color: "var(--teal)", fontSize: 12 }}>{cp.date} · {cp.label}</div>
+                      <div className="small" style={{ marginTop: 4, lineHeight: 1.5 }}>{cp.action}</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="panel"><div className="empty">Loading schedule…</div></div>
+            )}
+          </>
         )}
       </main>
 

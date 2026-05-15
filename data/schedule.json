@@ -1,0 +1,82 @@
+{
+  "version": "2026-05-15",
+  "phase": "Phase 1 · Recovery (days 1-14)",
+  "cadence_rule": "2-3 posts/week max during recovery (skill §17.3 step 6)",
+  "primary_account": "Alex Short personal (2,200 connections)",
+  "company_page_role": "reshare-only · never originates",
+  "calendar": [
+    {
+      "post_id": "post-1",
+      "bank_id": "P-064",
+      "day": "Tuesday",
+      "date": "2026-05-19",
+      "time_utc": "08:00",
+      "hook": "Three years on the same vessel.",
+      "format": "long-form text",
+      "rationale": "Safe recovery test — proven shape, proven hook. Highest-engagement post in our history (1,054 imp) re-run.",
+      "approval_status": "awaiting CEO"
+    },
+    {
+      "post_id": "post-2",
+      "bank_id": "P-001",
+      "day": "Thursday",
+      "date": "2026-05-21",
+      "time_utc": "08:00",
+      "hook": "The handover that wasn't there.",
+      "format": "carousel",
+      "rationale": "Site flagship USP. Chains thematically from Post 1.",
+      "approval_status": "awaiting CEO"
+    },
+    {
+      "post_id": "post-3",
+      "bank_id": "P-028",
+      "day": "Monday",
+      "date": "2026-05-25",
+      "time_utc": "08:00",
+      "hook": "Ask not what features it has.",
+      "format": "carousel",
+      "rationale": "Plants the Cross-Domain Chain flag. The James-Clear-naming-Atomic-Habits move.",
+      "approval_status": "awaiting CEO"
+    },
+    {
+      "post_id": "post-4",
+      "bank_id": "P-065",
+      "day": "Wednesday",
+      "date": "2026-05-27",
+      "time_utc": "08:00",
+      "hook": "Over 60% of chief stewardesses on 60m+ yachts now rotate every 2–3 months.",
+      "format": "long-form text",
+      "rationale": "Breaks carousel cadence. Expands ICP beyond CE to OWN/FM/CS.",
+      "approval_status": "awaiting CEO"
+    },
+    {
+      "post_id": "post-5",
+      "bank_id": "P-040",
+      "day": "Friday",
+      "date": "2026-05-29",
+      "time_utc": "08:00",
+      "hook": "When the inspector asks.",
+      "format": "carousel",
+      "rationale": "Closes the recovery window. Introduces SRV audience + verifier.celeste7.ai.",
+      "approval_status": "awaiting CEO"
+    }
+  ],
+  "checkpoints": [
+    {
+      "date": "2026-05-26",
+      "label": "Day 7 recovery check",
+      "action": "Capture EQS of posts 1-2. If 60-min impressions back to ≥5% of follower count, throttle releasing — continue to week 2."
+    },
+    {
+      "date": "2026-06-02",
+      "label": "Day 14 phase gate",
+      "action": "EQS median across all 5 posts. If ≥30% of follower count at 24h sustained, advance to Phase 2 (Ramp · 4 posts/week)."
+    },
+    {
+      "date": "2026-06-13",
+      "label": "Day 30 ramp gate",
+      "action": "If EQS median holds at baseline+, advance to Phase 3 (Daily). Otherwise hold at Phase 2 cadence."
+    }
+  ],
+  "next_brief_due": "2026-05-18 (Sunday 18:00 UTC) — week 2 brief generated from bank, excluding the first 5 IDs"
+}
