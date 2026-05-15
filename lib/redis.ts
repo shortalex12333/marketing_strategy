@@ -106,3 +106,48 @@ export async function appendCapture(c: CaptureRow): Promise<void> {
   await r.rpush(CAPTURES_KEY, JSON.stringify(c));
   await r.ltrim(CAPTURES_KEY, -MAX_CAPTURES, -1);
 }
+
+// ─── Draft overrides (editable caption / body) ────────────────────────
+
+const DRAFT_OVERRIDES_KEY = "draft_overrides";
+
+export interface DraftOverride {
+  caption?: string;
+  body?: string;
+  updated_at: string;
+}
+
+export async function getAllDraftOverrides(): Promise<Record<string, DraftOverride>> {
+  const r = client();
+  const all = await r.hgetall(DRAFT_OVERRIDES_KEY);
+  if (!all) return {};
+  const out: Record<string, DraftOverride> = {};
+  for (const [k, v] of Object.entries(all)) {
+    if (typeof v === "string") {
+      try { out[k] = JSON.parse(v); } catch { /* skip */ }
+    }
+  }
+  return out;
+}
+
+export async function getDraftOverride(id: string): Promise<DraftOverride | null> {
+  const r = client();
+  const v = await r.hget(DRAFT_OVERRIDES_KEY, id);
+  if (!v) return null;
+  try { return JSON.parse(v); } catch { return null; }
+}
+
+export async function putDraftOverride(
+  id: string,
+  patch: Omit<DraftOverride, "updated_at">
+): Promise<DraftOverride> {
+  const r = client();
+  const existing = (await getDraftOverride(id)) || { updated_at: new Date().toISOString() };
+  const merged: DraftOverride = {
+    ...existing,
+    ...patch,
+    updated_at: new Date().toISOString(),
+  };
+  await r.hset(DRAFT_OVERRIDES_KEY, id, JSON.stringify(merged));
+  return merged;
+}
