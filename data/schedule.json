@@ -1,82 +1,47 @@
 {
-  "version": "2026-05-15",
-  "phase": "Phase 1 · Recovery (days 1-14)",
-  "cadence_rule": "2-3 posts/week max during recovery (skill §17.3 step 6)",
+  "version": "2026-05-15-carousel-only",
+  "phase": "Recovery → Ramp · 15 carousels across 6 weeks",
+  "cadence_rule": "3 carousels/week (Mon · Wed · Fri) · upgrade to Phase 2 ramp if recovery confirmed by 2026-06-02",
   "primary_account": "Alex Short personal (2,200 connections)",
   "company_page_role": "reshare-only · never originates",
   "calendar": [
-    {
-      "post_id": "post-1",
-      "bank_id": "P-064",
-      "day": "Tuesday",
-      "date": "2026-05-19",
-      "time_utc": "08:00",
-      "hook": "Three years on the same vessel.",
-      "format": "long-form text",
-      "rationale": "Safe recovery test — proven shape, proven hook. Highest-engagement post in our history (1,054 imp) re-run.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-2",
-      "bank_id": "P-001",
-      "day": "Thursday",
-      "date": "2026-05-21",
-      "time_utc": "08:00",
-      "hook": "The handover that wasn't there.",
-      "format": "carousel",
-      "rationale": "Site flagship USP. Chains thematically from Post 1.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-3",
-      "bank_id": "P-028",
-      "day": "Monday",
-      "date": "2026-05-25",
-      "time_utc": "08:00",
-      "hook": "Ask not what features it has.",
-      "format": "carousel",
-      "rationale": "Plants the Cross-Domain Chain flag. The James-Clear-naming-Atomic-Habits move.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-4",
-      "bank_id": "P-065",
-      "day": "Wednesday",
-      "date": "2026-05-27",
-      "time_utc": "08:00",
-      "hook": "Over 60% of chief stewardesses on 60m+ yachts now rotate every 2–3 months.",
-      "format": "long-form text",
-      "rationale": "Breaks carousel cadence. Expands ICP beyond CE to OWN/FM/CS.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-5",
-      "bank_id": "P-040",
-      "day": "Friday",
-      "date": "2026-05-29",
-      "time_utc": "08:00",
-      "hook": "When the inspector asks.",
-      "format": "carousel",
-      "rationale": "Closes the recovery window. Introduces SRV audience + verifier.celeste7.ai.",
-      "approval_status": "awaiting CEO"
-    }
+    { "post_id": "post-2",  "bank_id": "P-001",                                       "day": "Thursday",  "date": "2026-05-21", "time_utc": "08:00", "hook": "The handover that wasn't there.",                             "format": "carousel", "rationale": "Site flagship USP. Recovery-window opener.",                                                              "approval_status": "awaiting CEO" },
+    { "post_id": "post-3",  "bank_id": "P-028",                                       "day": "Monday",    "date": "2026-05-25", "time_utc": "08:00", "hook": "Ask not what features it has.",                               "format": "carousel", "rationale": "Cross-Domain Chain framework plant.",                                                                     "approval_status": "awaiting CEO" },
+    { "post_id": "post-5",  "bank_id": "P-040",                                       "day": "Friday",    "date": "2026-05-29", "time_utc": "08:00", "hook": "When the inspector asks.",                                    "format": "carousel", "rationale": "Audit-trail / SRV audience entry · verifier.celeste7.ai first mention.",                                  "approval_status": "awaiting CEO" },
+    { "post_id": "post-6",  "bank_id": "Notebook · 149-imp",                          "day": "Monday",    "date": "2026-06-01", "time_utc": "08:00", "hook": "The notebook is the most accurate document on the vessel.",   "format": "carousel", "rationale": "Re-ship validated 149-imp throttled · universal CE artifact.",                                           "approval_status": "awaiting CEO" },
+    { "post_id": "post-7",  "bank_id": "P-038 · watermaker",                          "day": "Wednesday", "date": "2026-06-03", "time_utc": "08:00", "hook": "The port watermaker is degrading.",                           "format": "carousel", "rationale": "'Wait, you can do that?' inventory × fault join · /intelligence verbatim example.",                       "approval_status": "awaiting CEO" },
+    { "post_id": "post-8",  "bank_id": "§B.5 + S.13 · yard invoice",                  "day": "Friday",    "date": "2026-06-05", "time_utc": "08:00", "hook": "The yard invoice said stabiliser system serviced.",           "format": "carousel", "rationale": "€20-100k cost-bomb · OWN/SRV audience · invoice→record reframe (prior 61-imp).",                          "approval_status": "awaiting CEO" },
+    { "post_id": "post-9",  "bank_id": "New · MLC hours-of-rest",                     "day": "Monday",    "date": "2026-06-08", "time_utc": "08:00", "hook": "Saturday morning at the helm desk.",                          "format": "carousel", "rationale": "CO stakeholder · MLC compliance · negative-space query novelty.",                                         "approval_status": "awaiting CEO" },
+    { "post_id": "post-10", "bank_id": "P-007 · handover hour",                       "day": "Wednesday", "date": "2026-06-10", "time_utc": "08:00", "hook": "Forty-five minutes.",                                         "format": "carousel", "rationale": "Time-as-artifact · re-frame of 32-imp throttled handover-hour post.",                                       "approval_status": "awaiting CEO" },
+    { "post_id": "post-11", "bank_id": "P-033 · part on shelf",                       "day": "Friday",    "date": "2026-06-12", "time_utc": "08:00", "hook": "You ordered the cooling pump.",                               "format": "carousel", "rationale": "PURSER procurement angle · 'shelf for nineteen days then two years' specificity.",                         "approval_status": "awaiting CEO" },
+    { "post_id": "post-12", "bank_id": "Inbox · 172-imp",                             "day": "Monday",    "date": "2026-06-15", "time_utc": "08:00", "hook": "The fire suppression certificate.",                           "format": "carousel", "rationale": "Re-ship validated 172-imp · CAPT/OWN audience · email decay × compliance.",                               "approval_status": "awaiting CEO" },
+    { "post_id": "post-13", "bank_id": "§C.4 · repeat fault",                         "day": "Wednesday", "date": "2026-06-17", "time_utc": "08:00", "hook": "The starboard generator high-temp alarm.",                     "format": "carousel", "rationale": "€1,900/recurrence × 3 cost-bomb · cross-rotation memory = the canonical CelesteOS promise.",              "approval_status": "awaiting CEO" },
+    { "post_id": "post-14", "bank_id": "T1.3 · cert × rotation",                      "day": "Friday",    "date": "2026-06-19", "time_utc": "08:00", "hook": "The safety equipment certificate expired in port.",           "format": "carousel", "rationale": "Date × person reasoning · 'wait, you can do that?' moment · CAPT stakeholder.",                            "approval_status": "awaiting CEO" },
+    { "post_id": "post-15", "bank_id": "P-035 · captain email",                       "day": "Monday",    "date": "2026-06-22", "time_utc": "08:00", "hook": "The captain forwarded the supplier's note about the gyro.",   "format": "carousel", "rationale": "CAPT-anchored · email-as-knowledge fits /handover claim.",                                                "approval_status": "awaiting CEO" },
+    { "post_id": "post-16", "bank_id": "B.3 · drawing",                               "day": "Wednesday", "date": "2026-06-24", "time_utc": "08:00", "hook": "The yard delivered the drawing in 2018.",                     "format": "carousel", "rationale": "Refit scope-setting scenario · YPM stakeholder · untapped surface.",                                       "approval_status": "awaiting CEO" },
+    { "post_id": "post-17", "bank_id": "B.10 · crew photos",                          "day": "Friday",    "date": "2026-06-26", "time_utc": "08:00", "hook": "The engine room two years ago.",                              "format": "carousel", "rationale": "Image domain · CS audience crossover · 12 GB of personal-phone vessel history.",                          "approval_status": "awaiting CEO" }
   ],
   "checkpoints": [
     {
-      "date": "2026-05-26",
+      "date": "2026-05-28",
       "label": "Day 7 recovery check",
-      "action": "Capture EQS of posts 1-2. If 60-min impressions back to ≥5% of follower count, throttle releasing — continue to week 2."
+      "action": "Capture EQS of posts 2 + 3. If 60-min impressions ≥5% of follower count, throttle releasing — continue to week 2."
     },
     {
       "date": "2026-06-02",
-      "label": "Day 14 phase gate",
-      "action": "EQS median across all 5 posts. If ≥30% of follower count at 24h sustained, advance to Phase 2 (Ramp · 4 posts/week)."
+      "label": "Day 14 phase gate · advance to Phase 2 ramp",
+      "action": "EQS median across posts 2-5. If ≥30% of follower count at 24h sustained, the cadence holds at 3/week and proceeds with wave-2 carousels. Hold or step back if median is under baseline."
     },
     {
-      "date": "2026-06-13",
-      "label": "Day 30 ramp gate",
-      "action": "If EQS median holds at baseline+, advance to Phase 3 (Daily). Otherwise hold at Phase 2 cadence."
+      "date": "2026-06-16",
+      "label": "Day 28 mid-ramp review",
+      "action": "Top/bottom 3 EQS across all 7 published carousels. Outliers feed back as derivative formats (per skill §18.5). Anti-pattern check: no repeated USPs in consecutive weeks."
+    },
+    {
+      "date": "2026-06-30",
+      "label": "Day 42 wave-2 close-out",
+      "action": "Full slate retrospective. Decide wave 3 format mix (carousel-exclusive vs. add text+image / website-link extrapolation per CEO 2026-05-15 strategy)."
     }
   ],
-  "next_brief_due": "2026-05-18 (Sunday 18:00 UTC) — week 2 brief generated from bank, excluding the first 5 IDs"
+  "next_brief_due": "2026-06-30 (Tuesday) — wave-3 brief generation begins from bank, excluding the 15 IDs in this calendar"
 }
