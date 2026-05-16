@@ -1,7 +1,9 @@
 {
-  "version": "2026-05-15-carousel-only",
+  "version": "2026-05-15-cards-built",
   "source": "Wave-1 + Wave-2 carousel pipeline · text-only posts retired by CEO 2026-05-15",
   "fix_log": [
+    "2026-05-15: Built 9 card types (audit_stack/inventory_match/fault_history/email_linked/negative_space_query/modification_timeline/photo_gallery/notebook_entry/search_result); re-synced drafts from roadmap; post-5 slide 6 chain→audit_stack",
+    "2026-05-15: §3.3 projection-ban fixes — post-9 hook→artifact list, post-11 hook→fact (no 'you'), post-17 hook→artifact (no time-jump)",
     "2026-05-15: Removed post-1 (P-064 sensory triple long-form text) — CEO call: text-only posts are low-visibility, carousel-first strategy",
     "2026-05-15: Removed post-4 (P-065 rotation acceleration long-form text) — same reason",
     "2026-05-15: Promoted all 12 wave-2 carousels from roadmap.json → drafts (post-6 through post-17), rendered using chain/handover_doc card fallbacks",
@@ -18,7 +20,10 @@
       "hook": "The handover that wasn't there.",
       "doc_title": "The handover that wasn't there.",
       "usp": "U1 · Auto Handover Generation",
-      "targets": ["CE", "FM"],
+      "targets": [
+        "CE",
+        "FM"
+      ],
       "scenario": "mid-season rotation, no overlap",
       "posting_day_proposal": "Thu week 1",
       "posting_time_utc": "2026-05-21T08:00:00Z",
@@ -26,20 +31,70 @@
       "anchor": "/handover verbatim · §10 customer quote (CE March 2026) · §10 (45-min gangway) · skill §6 (chain + handover_doc cards)",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · PDFs + slide PNGs live",
+      "render_status": "rendered 2026-05-15 · native chain/handover_doc cards",
       "pdf_url": "/carousels/post-2-handover.pdf",
       "caption": "A chief joins a vessel mid-season. The previous chief is gone. There was no overlap.\n\nThe handover doc on the shared drive is a Word file with seven fonts and four authors. The next engineer rebuilds context for three days.\n\nEight months of operational context, compiled and signed by the outgoing chief, replaces two days of verbal briefing.\n\nceleste7.ai",
       "alt_text": "9-slide carousel: a chief joins a vessel mid-season with no overlap — the Word-doc handover that breaks under pressure — and the CelesteOS handover that compiles from every operational domain, signed, hyperlinked, ready before the relief opens his laptop. Built by a former ETO. celeste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "The handover that wasn't there.", "b": "A chief joins a vessel mid-season. The previous chief is gone. There was no overlap.", "bg_variant": "G_D_steeper" },
-        { "n": 2, "mode": "dark", "h": "The handover doc is a Word file on a shared drive.", "b": "Multiple authors. Different fonts. Different colours. Updated through the rotation, finalised the night before the outgoing engineer flies home." },
-        { "n": 3, "mode": "dark", "h": "Written under pressure, by tired people, the night before a flight.", "b": "Faults marked investigating without signature. Captain requests logged in red without context. Supplier names added without numbers. The record is colour-coded improvisation." },
-        { "n": 4, "mode": "dark", "type": "quote", "q": "The engineers spend three days every rotation rebuilding what the last team knew.", "c": "Three days × six rotations a year. Weeks of working life, every year, spent reconstructing the rotation they missed." },
-        { "n": 5, "mode": "dark", "h": "A decade of PMS releases. The handover doc opens the same way it did when it started.", "b": "The problem has been named for years. The industry has learned to live with it. Until now." },
-        { "n": 6, "mode": "light", "type": "vision", "h": "The handover, but every line is a link.", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "Compiled. Signed. Ready when the relief opens his laptop.", "card": "handover_doc" },
-        { "n": 8, "mode": "light", "h": "Eight months of operational context.", "b": "Not two days of verbal briefing." },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "The handover that wasn't there. Now it is. celeste7.ai", "bg_variant": "F_sandwich_reveal" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "The handover that wasn't there.",
+          "b": "A chief joins a vessel mid-season. The previous chief is gone. There was no overlap.",
+          "bg_variant": "G_D_steeper"
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "The handover doc is a Word file on a shared drive.",
+          "b": "Multiple authors. Different fonts. Different colours. Updated through the rotation, finalised the night before the outgoing engineer flies home."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "Written under pressure, by tired people, the night before a flight.",
+          "b": "Faults marked investigating without signature. Captain requests logged in red without context. Supplier names added without numbers. The record is colour-coded improvisation."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "type": "quote",
+          "q": "The engineers spend three days every rotation rebuilding what the last team knew.",
+          "c": "Three days × six rotations a year. Weeks of working life, every year, spent reconstructing the rotation they missed."
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "A decade of PMS releases. The handover doc opens the same way it did when it started.",
+          "b": "The problem has been named for years. The industry has learned to live with it. Until now."
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "The handover, but every line is a link.",
+          "card": "chain"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "Compiled. Signed. Ready when the relief opens his laptop.",
+          "card": "handover_doc"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "Eight months of operational context.",
+          "b": "Not two days of verbal briefing."
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "The handover that wasn't there. Now it is. celeste7.ai",
+          "bg_variant": "F_sandwich_reveal"
+        }
       ]
     },
     {
@@ -50,7 +105,11 @@
       "hook": "Ask not what features it has.",
       "doc_title": "Ask not what features it has.",
       "usp": "U3 · Cross-Domain Intelligence (framework primer)",
-      "targets": ["CE", "FM", "OWN"],
+      "targets": [
+        "CE",
+        "FM",
+        "OWN"
+      ],
       "scenario": "framework primer · any",
       "posting_day_proposal": "Mon week 2",
       "posting_time_utc": "2026-05-25T08:00:00Z",
@@ -58,20 +117,66 @@
       "anchor": "/blogs/seven-connections-yacht-pms verbatim · /intelligence verbatim · skill §6.2 (chain card)",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · PDFs + slide PNGs live",
+      "render_status": "rendered 2026-05-15 · native chain/handover_doc cards",
       "pdf_url": "/carousels/post-3-chain-primer.pdf",
       "caption": "Every yacht PMS has the modules. Almost none make the connections.\n\nThe fault, the work order, the part, the supplier, the audit trail — five rings. Each present in every PMS. Each isolated from the others.\n\nThat is cohabitation, not integration.\n\nThe Cross-Domain Chain is what a maintenance system looks like when the rings are linked. One fault opens its work order, surfaces its parts, names its supplier, and signs its audit row — without a single module change.\n\nceleste7.ai",
       "alt_text": "9-slide carousel: every yacht PMS has the same modules — fault, work order, parts, supplier, audit — and almost none of them connect. The Cross-Domain Chain is the five rings linked end to end. Built by a former ETO. celeste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "Ask not what features it has.", "b": "Ask what it connects." },
-        { "n": 2, "mode": "dark", "h": "Every yacht PMS has a fault module, a work-order module, a parts module, a supplier module.", "b": "All of them. Side by side. With a shared login." },
-        { "n": 3, "mode": "dark", "h": "That is not integration.", "b": "It is the difference between integration and cohabitation." },
-        { "n": 4, "mode": "dark", "h": "The fault you logged this morning sits in one module.", "b": "The work order is in another. The part is in a third. The supplier is in a fourth. The audit trail is in a fifth. Nobody links them. Not because nobody wants to. Because nobody built it that way." },
-        { "n": 5, "mode": "dark", "h": "The intelligence of a maintenance system is not the modules it has.", "b": "It is the connections it makes." },
-        { "n": 6, "mode": "light", "type": "vision", "h": "Five rings make the chain.", "card": "chain" },
-        { "n": 7, "mode": "light", "h": "Break a link, lose the truth.", "b": "A fault without a work order is an open loop. A work order without parts is a guess. A part without a supplier is an orphan. A supplier without an audit trail is a liability." },
-        { "n": 8, "mode": "light", "h": "The Cross-Domain Chain.", "b": "Not a feature. The way the vessel knows itself." },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "Ask not what features it has.",
+          "b": "Ask what it connects."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "Every yacht PMS has a fault module, a work-order module, a parts module, a supplier module.",
+          "b": "All of them. Side by side. With a shared login."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "That is not integration.",
+          "b": "It is the difference between integration and cohabitation."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "The fault you logged this morning sits in one module.",
+          "b": "The work order is in another. The part is in a third. The supplier is in a fourth. The audit trail is in a fifth. Nobody links them. Not because nobody wants to. Because nobody built it that way."
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "The intelligence of a maintenance system is not the modules it has.",
+          "b": "It is the connections it makes."
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "Five rings make the chain.",
+          "card": "chain"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "h": "Break a link, lose the truth.",
+          "b": "A fault without a work order is an open loop. A work order without parts is a guess. A part without a supplier is an orphan. A supplier without an audit trail is a liability."
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The Cross-Domain Chain.",
+          "b": "Not a feature. The way the vessel knows itself."
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -82,7 +187,11 @@
       "hook": "When the inspector asks.",
       "doc_title": "When the inspector asks.",
       "usp": "U4 · Immutable Audit Trail / Cryptographic Receipts",
-      "targets": ["CE", "CAPT", "SRV"],
+      "targets": [
+        "CE",
+        "CAPT",
+        "SRV"
+      ],
       "scenario": "Port State Control inspection",
       "posting_day_proposal": "Fri week 2",
       "posting_time_utc": "2026-05-29T08:00:00Z",
@@ -90,20 +199,66 @@
       "anchor": "/records verbatim · celeste7.ai homepage verbatim · §10 (€20-100k denied claim) · verifier.celeste7.ai",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · PDFs + slide PNGs live · used chain-card fallback for slide 6 (audit_stack card not yet built)",
+      "render_status": "rendered 2026-05-15 · audit_stack card now built (no longer chain fallback)",
       "pdf_url": "/carousels/post-5-inspector.pdf",
       "caption": "A port state inspector steps aboard. A few minutes to produce three years of records.\n\nAn invoice is not a record. A signed work order is. A familiarisation log signed at the time, not the morning of the inspection, is.\n\nEvery read, every write, every signature: attributed, timestamped, append-only. Independently verifiable in the inspector's own browser at verifier.celeste7.ai.\n\nThe audit trail is not a feature. It is a legal defence.\n\nceleste7.ai",
       "alt_text": "9-slide carousel: a port state inspector steps aboard — the records that exist but do not survive scrutiny — and the CelesteOS audit trail where every action is attributed, timestamped, append-only, and independently verifiable in the inspector's own browser. Built by a former ETO. celeste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "When the inspector asks.", "b": "A port state inspector steps aboard during a routine visit. The captain has a few minutes to produce the records." },
-        { "n": 2, "mode": "dark", "h": "Every PMS holds records. Few hold defensible ones.", "b": "Unsigned service entries. Backdated work orders. Familiarisation logs added the morning of the inspection. The records exist. None of them survive scrutiny." },
-        { "n": 3, "mode": "dark", "h": "An invoice is not a record. A signed work order is.", "b": "A familiarisation log signed by the crew member is. A handover note that outlives the crew member's departure is. The record is the artifact that can be produced when the question is asked." },
-        { "n": 4, "mode": "dark", "h": "A denied warranty claim on a main engine runs between €20,000 and €100,000.", "b": "The maintenance is usually done. The proof is the issue." },
-        { "n": 5, "mode": "dark", "h": "Records that can be retroactively modified cannot serve as evidence.", "b": "The audit trail is not a feature. It is a legal defence." },
-        { "n": 6, "mode": "light", "type": "vision", "h": "Every read. Every write. Every signature.", "card": "chain" },
-        { "n": 7, "mode": "light", "h": "The inspector asks. The records open.", "b": "Three years of vessel history in the same view." },
-        { "n": 8, "mode": "light", "h": "Independently verifiable.", "b": "Drop a CelesteOS evidence export at verifier.celeste7.ai. Verification runs entirely in your own browser. No upload. Open-source." },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "When the inspector asks.",
+          "b": "A port state inspector steps aboard during a routine visit. The captain has a few minutes to produce the records."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "Every PMS holds records. Few hold defensible ones.",
+          "b": "Unsigned service entries. Backdated work orders. Familiarisation logs added the morning of the inspection. The records exist. None of them survive scrutiny."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "An invoice is not a record. A signed work order is.",
+          "b": "A familiarisation log signed by the crew member is. A handover note that outlives the crew member's departure is. The record is the artifact that can be produced when the question is asked."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "A denied warranty claim on a main engine runs between €20,000 and €100,000.",
+          "b": "The maintenance is usually done. The proof is the issue."
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "Records that can be retroactively modified cannot serve as evidence.",
+          "b": "The audit trail is not a feature. It is a legal defence."
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "Every read. Every write. Every signature.",
+          "card": "audit_stack"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "h": "The inspector asks. The records open.",
+          "b": "Three years of vessel history in the same view."
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "Independently verifiable.",
+          "b": "Drop a CelesteOS evidence export at verifier.celeste7.ai. Verification runs entirely in your own browser. No upload. Open-source."
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -114,7 +269,10 @@
       "hook": "The notebook is the most accurate document on the vessel.",
       "doc_title": "The notebook is the most accurate document.",
       "usp": "U1 / artifact",
-      "targets": ["CE", "ENG2"],
+      "targets": [
+        "CE",
+        "ENG2"
+      ],
       "scenario": "End-of-rotation",
       "posting_day_proposal": "Mon week 3",
       "posting_time_utc": "2026-06-01T08:00:00Z",
@@ -122,19 +280,67 @@
       "anchor": "§B.1 source bank · prior 149-imp · §10 founder credential",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain/handover_doc fallbacks",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-6-notebook.pdf",
       "caption": "Every vessel has a notebook. A drawer. A diary. Fault codes scratched in margins. Workarounds noted in the back. Suppliers known only by first name.\n\nThe notebook is the most accurate document on the vessel. It is also the only one that leaves with the engineer who wrote it.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "The notebook is the most accurate document on the vessel.", "b": "A handwritten diary in a drawer. Fault codes. Workarounds. Diagrams the yard never received." },
-        { "n": 2, "mode": "dark", "h": "It is also the only one that leaves with the engineer who wrote it.", "b": "The replacement engineer inherits the official records. The notebook is in a kitchen drawer in another country." },
-        { "n": 3, "mode": "dark", "h": "Three years of accumulated knowledge.", "b": "Inherited by the next chief as PDFs and silence. The notebook never made it past the gangway." },
-        { "n": 4, "mode": "dark", "h": "The PMS is the public face of the vessel.", "b": "The notebook is where the knowledge lives." },
-        { "n": 5, "mode": "dark", "h": "Every vessel has data. Few have memory.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "The notebook stays.", "card": "handover_doc" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "Indexed. Signed. Searchable from the vessel's record.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "The next chief inherits everything the last one knew.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "The notebook is the most accurate document on the vessel.",
+          "b": "A handwritten diary in a drawer. Fault codes. Workarounds. Diagrams the yard never received."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "It is also the only one that leaves with the engineer who wrote it.",
+          "b": "The replacement engineer inherits the official records. The notebook is in a kitchen drawer in another country."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "Three years of accumulated knowledge.",
+          "b": "Inherited by the next chief as PDFs and silence. The notebook never made it past the gangway."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "The PMS is the public face of the vessel.",
+          "b": "The notebook is where the knowledge lives."
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "Every vessel has data. Few have memory.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "The notebook stays.",
+          "card": "notebook_entry"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "Indexed. Signed. Searchable from the vessel's record.",
+          "card": "search_result"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The next chief inherits everything the last one knew.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai",
+          "bg_variant": "F_sandwich_reveal"
+        }
       ]
     },
     {
@@ -145,7 +351,10 @@
       "hook": "The port watermaker is degrading.",
       "doc_title": "The port watermaker is degrading.",
       "usp": "U3 / intelligence",
-      "targets": ["CE", "ENG2"],
+      "targets": [
+        "CE",
+        "ENG2"
+      ],
       "scenario": "Equipment failure · inventory × fault join",
       "posting_day_proposal": "Wed week 3",
       "posting_time_utc": "2026-06-03T08:00:00Z",
@@ -153,19 +362,66 @@
       "anchor": "/intelligence verbatim · §10 cross-domain chain",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain fallback for inventory_match card",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-7-watermaker.pdf",
       "caption": "The port watermaker is degrading. You log it. Move on. Three weeks later you order the wrong membrane. The right one was already aboard — bought during the last refit, logged against a different equipment record.\n\nYou did not need to remember. The system did.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "The port watermaker is degrading.", "b": "TDS readings slipping. Recovery rate down 12% in six weeks." },
-        { "n": 2, "mode": "dark", "h": "You log the symptom. The PMS shows the equipment record.", "b": "You move on." },
-        { "n": 3, "mode": "dark", "h": "Three weeks later you order the wrong membrane.", "b": "Wrong size. Lead time eleven days. Charter starts in five." },
-        { "n": 4, "mode": "dark", "h": "The right membrane was on the shelf the entire time.", "b": "Bought during the last refit. Logged against a different equipment record." },
-        { "n": 5, "mode": "dark", "h": "You did not need to remember it. The system knows.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "Fault logged: TDS rising.", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "One click. Pre-populated work order. Inventory deducted. Handover updated.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "The system that connects the dots.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "The port watermaker is degrading.",
+          "b": "TDS readings slipping. Recovery rate down 12% in six weeks."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "You log the symptom. The PMS shows the equipment record.",
+          "b": "You move on."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "Three weeks later you order the wrong membrane.",
+          "b": "Wrong size. Lead time eleven days. Charter starts in five."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "The right membrane was on the shelf the entire time.",
+          "b": "Bought during the last refit. Logged against a different equipment record."
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "You did not need to remember it. The system knows.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "Fault logged: TDS rising.",
+          "card": "inventory_match"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "One click. Pre-populated work order. Inventory deducted. Handover updated.",
+          "card": "chain"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The system that connects the dots.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -176,7 +432,11 @@
       "hook": "The yard invoice said stabiliser system serviced.",
       "doc_title": "An invoice is not a record.",
       "usp": "U4 / audit · cost-bomb",
-      "targets": ["CE", "OWN", "SRV"],
+      "targets": [
+        "CE",
+        "OWN",
+        "SRV"
+      ],
       "scenario": "Warranty claim",
       "posting_day_proposal": "Fri week 3",
       "posting_time_utc": "2026-06-05T08:00:00Z",
@@ -184,19 +444,66 @@
       "anchor": "§10 cost band · prior 61-imp validated",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain fallback for audit_stack card",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-8-yard-invoice.pdf",
       "caption": "The yard invoice said stabiliser system serviced. The hydraulic fluid was never changed. Twelve months later the stabiliser failed under warranty. The claim was denied.\n\nA denied warranty claim on a main engine or generator runs between €20,000 and €100,000. The maintenance is usually done. The proof is the issue.\n\nAn invoice is not a record. A signed work order is.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "The yard invoice said stabiliser system serviced.", "b": "The hydraulic fluid was never changed." },
-        { "n": 2, "mode": "dark", "h": "The invoice was filed. The work was assumed.", "b": "The vessel paid. The crew moved on." },
-        { "n": 3, "mode": "dark", "h": "Twelve months later the stabiliser failed.", "b": "Warranty claim denied — no proof of fluid change." },
-        { "n": 4, "mode": "dark", "h": "€20,000 to €100,000 per denied claim.", "b": "The maintenance is usually done. The proof is the issue." },
-        { "n": 5, "mode": "dark", "h": "An invoice is not a record. A signed work order is.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "The invoice. The work order. The signature.", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "Linked. Attributed. Defensible.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "The proof lives where the work was done.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "The yard invoice said stabiliser system serviced.",
+          "b": "The hydraulic fluid was never changed."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "The invoice was filed. The work was assumed.",
+          "b": "The vessel paid. The crew moved on."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "Twelve months later the stabiliser failed.",
+          "b": "Warranty claim denied — no proof of fluid change."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "€20,000 to €100,000 per denied claim.",
+          "b": "The maintenance is usually done. The proof is the issue."
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "An invoice is not a record. A signed work order is.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "The invoice. The work order. The signature.",
+          "card": "audit_stack"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "Linked. Attributed. Defensible.",
+          "card": "chain"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The proof lives where the work was done.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -204,10 +511,14 @@
       "bank_id": "New · MLC hours-of-rest",
       "ord": 7,
       "format": "carousel",
-      "hook": "Saturday morning at the helm desk.",
+      "hook": "Fourteen crew. Three weeks of hours-of-rest forms. One highlighter.",
       "doc_title": "Saturday morning at the helm desk.",
       "usp": "U4 / compliance",
-      "targets": ["CO", "CAPT", "CE"],
+      "targets": [
+        "CO",
+        "CAPT",
+        "CE"
+      ],
       "scenario": "MLC audit · Saturday hours-of-rest check",
       "posting_day_proposal": "Mon week 4",
       "posting_time_utc": "2026-06-08T08:00:00Z",
@@ -215,19 +526,66 @@
       "anchor": "skill §10 · MLC compliance · negative-space query novelty",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain fallback for negative_space_query + audit_stack cards",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-9-saturday-audit.pdf",
-      "caption": "Saturday morning at the helm desk. A printout of hours-of-rest forms. A highlighter. Three weeks × fourteen crew × the certainty that something is missing.\n\nEvery PMS shows what was signed. None of them show who has not. The gap takes forty minutes to find by hand.\n\nOr it announces itself.\n\nceleste7.ai",
+      "caption": "Fourteen crew. Three weeks of hours-of-rest forms. One highlighter. The compliance audit, done by hand at the helm desk.\n\nEvery PMS shows what was signed. None of them show who has not. The gap takes forty minutes to find by hand.\n\nOr it announces itself.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "Saturday morning at the helm desk.", "b": "A printout. A highlighter. Three weeks of hours-of-rest forms × 14 crew." },
-        { "n": 2, "mode": "dark", "h": "The chief officer checks each row by hand.", "b": "Green ticks. Red question marks. Forty minutes to find what is missing." },
-        { "n": 3, "mode": "dark", "h": "Every PMS shows what was signed.", "b": "None of them show who has not." },
-        { "n": 4, "mode": "dark", "h": "By Monday the inspection has arrived.", "b": "The gap is whatever the highlighter missed." },
-        { "n": 5, "mode": "dark", "h": "The records do not need to be reached. They need to announce themselves.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "Who hasn't signed?", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "The named gap. Surfaced before the inspection.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "The unsigned. The names. The dates. One query.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "Fourteen crew. Three weeks of hours-of-rest forms. One highlighter.",
+          "b": "The compliance audit. Done by hand, at the helm desk."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "The chief officer checks each row by hand.",
+          "b": "Green ticks. Red question marks. Forty minutes to find what is missing."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "Every PMS shows what was signed.",
+          "b": "None of them show who has not."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "By Monday the inspection has arrived.",
+          "b": "The gap is whatever the highlighter missed."
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "The records do not need to be reached. They need to announce themselves.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "Who hasn't signed?",
+          "card": "negative_space_query"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "The named gap. Surfaced before the inspection.",
+          "card": "audit_stack"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The unsigned. The names. The dates. One query.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -238,7 +596,10 @@
       "hook": "Forty-five minutes.",
       "doc_title": "Forty-five minutes determines two years.",
       "usp": "U1 / handover · time-as-artifact",
-      "targets": ["CE", "FM"],
+      "targets": [
+        "CE",
+        "FM"
+      ],
       "scenario": "Gangway handover",
       "posting_day_proposal": "Wed week 4",
       "posting_time_utc": "2026-06-10T08:00:00Z",
@@ -246,19 +607,66 @@
       "anchor": "§10 (45-min gangway) · prior 32-imp throttled",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · uses chain + handover_doc (both native)",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-10-45-minutes.pdf",
       "caption": "Forty-five minutes is what the outgoing chief is given. Two years aboard. Forty-five minutes to transfer it.\n\nThe relief nods, takes notes, asks the questions he can think to ask. He will discover the questions he should have asked over the next six months. Every time something breaks.\n\nForty-five minutes determines two years.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "Forty-five minutes.", "b": "The time the outgoing chief has been given to brief the relief." },
-        { "n": 2, "mode": "dark", "h": "Two years aboard. Forty-five minutes to transfer it.", "b": "Fault patterns. Supplier relationships. Workarounds never written down because there was no time to write them down." },
-        { "n": 3, "mode": "dark", "h": "The relief nods. Takes notes. Asks the questions he can think to ask.", "b": "He will discover the questions he should have asked over the next six months. Every time something breaks." },
-        { "n": 4, "mode": "dark", "h": "Forty-five minutes determines two years.", "b": "" },
-        { "n": 5, "mode": "dark", "h": "The handover should not depend on what one chief can remember to say in forty-five minutes of time.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "The handover that wrote itself.", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "Eight months of context. Signed. Indexed.", "card": "handover_doc" },
-        { "n": 8, "mode": "light", "h": "Forty-five minutes is now enough.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "Forty-five minutes.",
+          "b": "The time the outgoing chief has been given to brief the relief."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "Two years aboard. Forty-five minutes to transfer it.",
+          "b": "Fault patterns. Supplier relationships. Workarounds never written down because there was no time to write them down."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "The relief nods. Takes notes. Asks the questions he can think to ask.",
+          "b": "He will discover the questions he should have asked over the next six months. Every time something breaks."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "Forty-five minutes determines two years.",
+          "b": ""
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "The handover should not depend on what one chief can remember to say in forty-five minutes of time.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "The handover that wrote itself.",
+          "card": "chain"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "Eight months of context. Signed. Indexed.",
+          "card": "handover_doc"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "Forty-five minutes is now enough.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -266,10 +674,14 @@
       "bank_id": "P-033 · inventory × fault join",
       "ord": 9,
       "format": "carousel",
-      "hook": "You ordered the cooling pump.",
+      "hook": "The cooling pump sat on the shelf for nineteen days.",
       "doc_title": "The stock that was always there.",
       "usp": "U3 / chain · procurement",
-      "targets": ["CE", "PURSER", "FM"],
+      "targets": [
+        "CE",
+        "PURSER",
+        "FM"
+      ],
       "scenario": "Ordering waste",
       "posting_day_proposal": "Fri week 4",
       "posting_time_utc": "2026-06-12T08:00:00Z",
@@ -277,19 +689,66 @@
       "anchor": "§10 · §B.5 procurement waste",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain fallback for inventory_match card",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-11-part-on-shelf.pdf",
-      "caption": "You ordered the cooling pump. Three-day lead time. Three weeks earlier you ordered the same pump. Different chief. Different fault. Same part number.\n\nThe first pump sat on the shelf for nineteen days. Then in stores for two more years.\n\nEvery refit. Every rotation. The stock was already aboard.\n\nceleste7.ai",
+      "caption": "The cooling pump was ordered twice. Different chief. Different fault. Same part number.\n\nThe first one sat on the shelf for nineteen days. Then in stores for two more years.\n\nEvery refit. Every rotation. The stock was already aboard.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "You ordered the cooling pump.", "b": "Three-day lead time. Supplier confirmation in your inbox." },
-        { "n": 2, "mode": "dark", "h": "Three weeks earlier you ordered the same pump.", "b": "Different chief. Different fault. Same part number." },
-        { "n": 3, "mode": "dark", "h": "The first pump sat on the shelf for nineteen days.", "b": "Then sat in stores for two more years." },
-        { "n": 4, "mode": "dark", "h": "Every refit. Every rotation. The stock was already aboard.", "b": "" },
-        { "n": 5, "mode": "dark", "h": "The supplier knows what we ordered. The PMS forgot the bin location.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "Fault: low cooling pressure.", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "One click. The pump arrives from the shelf, not the supplier.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "The stock that was always there.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "The cooling pump sat on the shelf for nineteen days.",
+          "b": "Then in stores for two more years."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "It had been ordered twice.",
+          "b": "Different chief. Different fault. Same part number."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "Three-day lead time on the reorder.",
+          "b": "The first one was already aboard."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "Every refit. Every rotation. The stock was already aboard.",
+          "b": ""
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "The part was never missing. The link to it was.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "Fault: low cooling pressure.",
+          "card": "inventory_match"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "One click. The pump arrives from the shelf, not the supplier.",
+          "card": "chain"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The stock that was always there.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -300,7 +759,11 @@
       "hook": "The fire suppression certificate.",
       "doc_title": "Inboxes outlive nobody.",
       "usp": "U1 + U4 · inbox decay",
-      "targets": ["CAPT", "CE", "OWN"],
+      "targets": [
+        "CAPT",
+        "CE",
+        "OWN"
+      ],
       "scenario": "Warranty / inbox deactivation",
       "posting_day_proposal": "Mon week 5",
       "posting_time_utc": "2026-06-15T08:00:00Z",
@@ -308,19 +771,66 @@
       "anchor": "§B.2 · prior 172-imp · §10",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain fallback for email_linked card",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-12-inbox.pdf",
       "caption": "The contractor sent the fire suppression certificate by email. The email landed in the captain's inbox.\n\nThe captain left six months later. The inbox was deactivated within a week.\n\nThe vessel paid for the certificate and lost it on the same day.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "The fire suppression certificate.", "b": "Sent by email from the contractor to the captain. Filed in the inbox." },
-        { "n": 2, "mode": "dark", "h": "The captain left the vessel six months later.", "b": "Inbox deactivated within a week. Normal management policy." },
-        { "n": 3, "mode": "dark", "h": "The certificate still exists on a server in another country.", "b": "Issued correctly. Paid for. Filed. Functionally lost." },
-        { "n": 4, "mode": "dark", "h": "Critical records live in inboxes. Inboxes outlive nobody.", "b": "" },
-        { "n": 5, "mode": "dark", "h": "The vessel did not own its proof. The departing captain did.", "b": "Until now." },
-        { "n": 6, "mode": "light", "type": "vision", "h": "The email is the record.", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "Indexed. Linked. Retained.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "The vessel owns its records. Not the inbox.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "The fire suppression certificate.",
+          "b": "Sent by email from the contractor to the captain. Filed in the inbox."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "The captain left the vessel six months later.",
+          "b": "Inbox deactivated within a week. Normal management policy."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "The certificate still exists on a server in another country.",
+          "b": "Issued correctly. Paid for. Filed. Functionally lost."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "Critical records live in inboxes. Inboxes outlive nobody.",
+          "b": ""
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "The vessel did not own its proof. The departing captain did.",
+          "b": "Until now."
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "The email is the record.",
+          "card": "email_linked"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "Indexed. Linked. Retained.",
+          "card": "chain"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The vessel owns its records. Not the inbox.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -331,7 +841,10 @@
       "hook": "The starboard generator high-temp alarm.",
       "doc_title": "The diagnostic path is not walked twice.",
       "usp": "U3 / cross-rotation memory",
-      "targets": ["CE", "ENG2"],
+      "targets": [
+        "CE",
+        "ENG2"
+      ],
       "scenario": "Repeat fault detection",
       "posting_day_proposal": "Wed week 5",
       "posting_time_utc": "2026-06-17T08:00:00Z",
@@ -339,19 +852,66 @@
       "anchor": "§10 €950/day external technician · skill §6.2 chain",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain fallback for fault_history card",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-13-repeat-fault.pdf",
       "caption": "The starboard generator alarmed three times in eighteen months. Three different chiefs. Three first-time diagnoses. €1,900 per recurrence in external technician time.\n\nThe fix was in the system the whole time. Filed in someone else's rotation. Unreachable by the chief on duty.\n\nThe same diagnostic path is not walked twice.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "The starboard generator high-temp alarm.", "b": "Three times in eighteen months." },
-        { "n": 2, "mode": "dark", "h": "Three different chiefs. Three first-time diagnoses.", "b": "Each one began the same path. Each one rediscovered the heat exchanger." },
-        { "n": 3, "mode": "dark", "h": "Two days of external technician time. Again.", "b": "" },
-        { "n": 4, "mode": "dark", "h": "€950 per day. €1,900 per recurrence.", "b": "The fix was in the system the whole time." },
-        { "n": 5, "mode": "dark", "h": "Same fault to the equipment. Three separate faults to the system.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "This alarm has occurred before.", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "The third chief reads what the first chief found.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "The diagnostic path is not walked twice.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "The starboard generator high-temp alarm.",
+          "b": "Three times in eighteen months."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "Three different chiefs. Three first-time diagnoses.",
+          "b": "Each one began the same path. Each one rediscovered the heat exchanger."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "Two days of external technician time. Again.",
+          "b": ""
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "€950 per day. €1,900 per recurrence.",
+          "b": "The fix was in the system the whole time."
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "Same fault to the equipment. Three separate faults to the system.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "This alarm has occurred before.",
+          "card": "fault_history"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "The third chief reads what the first chief found.",
+          "card": "chain"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The diagnostic path is not walked twice.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -362,7 +922,11 @@
       "hook": "The safety equipment certificate expired in port.",
       "doc_title": "Cert × calendar × rotation.",
       "usp": "U4 / date-math · personnel-aware",
-      "targets": ["CAPT", "CO", "CE"],
+      "targets": [
+        "CAPT",
+        "CO",
+        "CE"
+      ],
       "scenario": "MLC / certificate management",
       "posting_day_proposal": "Fri week 5",
       "posting_time_utc": "2026-06-19T08:00:00Z",
@@ -370,19 +934,66 @@
       "anchor": "skill §6.3 (date-math) · industry context flag-state fees",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain fallback for negative_space_query card",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-14-certificate-in-port.pdf",
       "caption": "The safety equipment certificate expired in port. The captain who knew was on shore leave. The captain aboard had not been told to look.\n\nTwelve certificates expire each year. Two captains rotate through each calendar. The gap is ashore if nobody owns the bridge.\n\nCert × calendar × rotation — three systems, one decision.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "The safety equipment certificate expired in port.", "b": "The captain was at sea when it lapsed." },
-        { "n": 2, "mode": "dark", "h": "The renewal was scheduled. The captain who knew was on shore leave.", "b": "The captain aboard had not been told to look." },
-        { "n": 3, "mode": "dark", "h": "Two flag-state notices later, the vessel discovered the gap.", "b": "€4,200 in late fees. Three weeks of correspondence." },
-        { "n": 4, "mode": "dark", "h": "Twelve certificates expire each year. Two captains rotate through each calendar.", "b": "The gap is ashore if nobody owns the bridge." },
-        { "n": 5, "mode": "dark", "h": "Cert × calendar × rotation — three systems, one decision.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "Which certificates expire while the captain is on rotation?", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "The lapsing certificate, with the renewal contact already attached.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "The bridge does not depend on which captain reads the diary.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "The safety equipment certificate expired in port.",
+          "b": "The captain was at sea when it lapsed."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "The renewal was scheduled. The captain who knew was on shore leave.",
+          "b": "The captain aboard had not been told to look."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "Two flag-state notices later, the vessel discovered the gap.",
+          "b": "€4,200 in late fees. Three weeks of correspondence."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "Twelve certificates expire each year. Two captains rotate through each calendar.",
+          "b": "The gap is ashore if nobody owns the bridge."
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "Cert × calendar × rotation — three systems, one decision.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "Which certificates expire while the captain is on rotation?",
+          "card": "negative_space_query"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "The lapsing certificate, with the renewal contact already attached.",
+          "card": "chain"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The bridge does not depend on which captain reads the diary.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -393,7 +1004,11 @@
       "hook": "The captain forwarded the supplier's note about the gyro.",
       "doc_title": "Correspondence is operational truth.",
       "usp": "U3 / email-linkage",
-      "targets": ["CAPT", "CE", "FM"],
+      "targets": [
+        "CAPT",
+        "CE",
+        "FM"
+      ],
       "scenario": "Warranty / correspondence loss",
       "posting_day_proposal": "Mon week 6",
       "posting_time_utc": "2026-06-22T08:00:00Z",
@@ -401,19 +1016,66 @@
       "anchor": "/handover (email-correspondence claim) · skill §6.2",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain fallback for email_linked card",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-15-captain-email.pdf",
       "caption": "The captain forwarded the supplier's note about the gyro last March. The chief was on rotation. He read it on a Tuesday. He did not reply.\n\nNine months later the gyro fails. The supplier's note had named the failure mode. The vessel does not have the note.\n\nCorrespondence is operational truth. Treat it like one.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "The captain forwarded the supplier's note about the gyro.", "b": "Last March. To the chief." },
-        { "n": 2, "mode": "dark", "h": "The chief was on rotation. He read it on a Tuesday. He did not reply.", "b": "The thread closed." },
-        { "n": 3, "mode": "dark", "h": "Nine months later the gyro fails.", "b": "The supplier's note had named the failure mode. The vessel does not have the note." },
-        { "n": 4, "mode": "dark", "h": "The captain's email was forwarded. It was never bound to the equipment.", "b": "" },
-        { "n": 5, "mode": "dark", "h": "The thread closed. The risk did not.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "Email · linked to equipment.", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "Searchable from the equipment. Surfaced when the fault returns.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "Correspondence is operational truth. Treat it like one.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "The captain forwarded the supplier's note about the gyro.",
+          "b": "Last March. To the chief."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "The chief was on rotation. He read it on a Tuesday. He did not reply.",
+          "b": "The thread closed."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "Nine months later the gyro fails.",
+          "b": "The supplier's note had named the failure mode. The vessel does not have the note."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "The captain's email was forwarded. It was never bound to the equipment.",
+          "b": ""
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "The thread closed. The risk did not.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "Email · linked to equipment.",
+          "card": "email_linked"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "Searchable from the equipment. Surfaced when the fault returns.",
+          "card": "chain"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "Correspondence is operational truth. Treat it like one.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -424,7 +1086,10 @@
       "hook": "The yard delivered the drawing in 2018.",
       "doc_title": "The drawing is still the most authoritative document.",
       "usp": "U3 / refit · YPM audience",
-      "targets": ["CE", "YPM"],
+      "targets": [
+        "CE",
+        "YPM"
+      ],
       "scenario": "Refit scope-setting",
       "posting_day_proposal": "Wed week 6",
       "posting_time_utc": "2026-06-24T08:00:00Z",
@@ -432,19 +1097,66 @@
       "anchor": "§B.3 modifications log · industry observation",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain fallback for modification_timeline card",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-16-drawing.pdf",
       "caption": "The yard delivered the drawing in 2018. Stamped. Signed. The most authoritative document on the vessel.\n\nSix refits later, the drawing is a fiction. The wiring changed. The valve was rerouted. The starboard pump was moved port. None of it went back to the yard.\n\nThe drawing is still the most authoritative document. That is the problem.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "The yard delivered the drawing in 2018.", "b": "Stamped. Signed. The most authoritative document on the vessel." },
-        { "n": 2, "mode": "dark", "h": "Six refits later, the drawing is a fiction.", "b": "The wiring changed. The valve was rerouted. The starboard pump was moved port. None of it went back to the yard." },
-        { "n": 3, "mode": "dark", "h": "The next refit begins with a drawing that no longer matches the vessel.", "b": "The yard quotes from fiction. The crew corrects in person. The cost is the correction." },
-        { "n": 4, "mode": "dark", "h": "The drawing is still the most authoritative document. That is the problem.", "b": "" },
-        { "n": 5, "mode": "dark", "h": "The drawing did not change. The vessel did. Nothing tracked the gap.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "Drawing + modifications + change history.", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "The vessel in 2018. The vessel today. Both signed.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "The refit begins from reality, not from 2018.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "The yard delivered the drawing in 2018.",
+          "b": "Stamped. Signed. The most authoritative document on the vessel."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "Six refits later, the drawing is a fiction.",
+          "b": "The wiring changed. The valve was rerouted. The starboard pump was moved port. None of it went back to the yard."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "The next refit begins with a drawing that no longer matches the vessel.",
+          "b": "The yard quotes from fiction. The crew corrects in person. The cost is the correction."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "The drawing is still the most authoritative document. That is the problem.",
+          "b": ""
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "The drawing did not change. The vessel did. Nothing tracked the gap.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "Drawing + modifications + change history.",
+          "card": "modification_timeline"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "The vessel in 2018. The vessel today. Both signed.",
+          "card": "chain"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The refit begins from reality, not from 2018.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     },
     {
@@ -452,10 +1164,14 @@
       "bank_id": "B.10 · image-as-vessel-asset",
       "ord": 15,
       "format": "carousel",
-      "hook": "The engine room two years ago.",
+      "hook": "Twelve gigabytes of the engine room. On a phone.",
       "doc_title": "The vessel keeps its own picture.",
       "usp": "U5 / cloud onboarding · image domain",
-      "targets": ["CE", "CS", "CAPT"],
+      "targets": [
+        "CE",
+        "CS",
+        "CAPT"
+      ],
       "scenario": "Rotation · personal-phone artifacts",
       "posting_day_proposal": "Fri week 6",
       "posting_time_utc": "2026-06-26T08:00:00Z",
@@ -463,19 +1179,66 @@
       "anchor": "§B.10 · brand-positioning §1.4 (image-domain)",
       "approval_status": "awaiting CEO",
       "render_required": true,
-      "render_status": "rendered 2026-05-15 · using chain fallback for photo_gallery card",
+      "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-17-crew-photos.pdf",
-      "caption": "The engine room two years ago. A photo on a crew member's iPhone. Before the refit. Before the rotation. Before the controller was replaced.\n\nTwelve gigabytes of unstructured vessel history in a personal camera roll. The most accurate visual record of the vessel — and the only one the next chief will never see.\n\nThe crew left. The phone left with them.\n\nceleste7.ai",
+      "caption": "Twelve gigabytes of the engine room sits on a crew member's phone. Before the refit. Before the controller was replaced.\n\nThe most accurate visual record of the vessel — and the only one the next chief will never see.\n\nThe crew left. The phone left with them.\n\nceleste7.ai",
       "slides": [
-        { "n": 1, "mode": "dark", "h": "The engine room two years ago.", "b": "A photo on a crew member's iPhone." },
-        { "n": 2, "mode": "dark", "h": "Before the refit. Before the rotation. Before the controller was replaced.", "b": "Twelve gigabytes of unstructured vessel history in a personal camera roll." },
-        { "n": 3, "mode": "dark", "h": "The most accurate visual record of the vessel.", "b": "And the only one the next chief will never see." },
-        { "n": 4, "mode": "dark", "h": "The crew left. The phone left with them.", "b": "" },
-        { "n": 5, "mode": "dark", "h": "The vessel does not own its images. The departing crew did.", "b": "" },
-        { "n": 6, "mode": "light", "type": "vision", "h": "Photo · linked to equipment.", "card": "chain" },
-        { "n": 7, "mode": "light", "type": "vision", "h": "Searchable from the equipment record. Inherited at rotation.", "card": "chain" },
-        { "n": 8, "mode": "light", "h": "The vessel keeps its own picture.", "b": "" },
-        { "n": 9, "mode": "light", "h": "Control over your complexity.", "b": "celeste7.ai" }
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "Twelve gigabytes of the engine room. On a phone.",
+          "b": "A crew member's camera roll. Before the refit. Before the controller was replaced."
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "The most accurate visual record of the vessel.",
+          "b": "Unstructured. Personal. Dated only by the file system."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "And the only one the next chief will never see.",
+          "b": "It rotated off with the crew member who shot it."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "h": "The crew left. The phone left with them.",
+          "b": ""
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "The vessel does not own its picture. The departing crew did.",
+          "b": ""
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "type": "vision",
+          "h": "Photo · linked to equipment.",
+          "card": "photo_gallery"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "type": "vision",
+          "h": "Searchable from the equipment record. Inherited at rotation.",
+          "card": "chain"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The vessel keeps its own picture.",
+          "b": ""
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "h": "Control over your complexity.",
+          "b": "celeste7.ai"
+        }
       ]
     }
   ]
