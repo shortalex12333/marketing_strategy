@@ -35,7 +35,9 @@
           "n": 1,
           "mode": "dark",
           "h": "The notebook is the most accurate document on the vessel.",
-          "b": "A handwritten diary in a drawer. Fault codes. Workarounds. Diagrams the yard never received."
+          "b": "A handwritten diary in a drawer. Fault codes. Workarounds. Diagrams the yard never received.",
+          "atmosphere": "amber",
+          "emph": "accurate"
         },
         {
           "n": 2,
@@ -117,7 +119,9 @@
           "mode": "dark",
           "h": "The port watermaker is degrading.",
           "b": "TDS readings slipping. Recovery rate down 12% in six weeks.",
-          "bg_variant": "G_engineroom"
+          "bg_variant": "G_engineroom",
+          "atmosphere": "teal",
+          "emph": "degrading"
         },
         {
           "n": 2,
@@ -198,7 +202,9 @@
           "n": 1,
           "mode": "dark",
           "h": "The yard invoice said stabiliser system serviced.",
-          "b": "The hydraulic fluid was never changed."
+          "b": "The hydraulic fluid was never changed.",
+          "atmosphere": "red",
+          "emph": "said"
         },
         {
           "n": 2,
@@ -279,7 +285,9 @@
           "n": 1,
           "mode": "dark",
           "h": "Fourteen crew. Three weeks of hours-of-rest forms. One highlighter.",
-          "b": "The compliance audit. Done by hand, at the helm desk."
+          "b": "The compliance audit. Done by hand, at the helm desk.",
+          "atmosphere": "amber",
+          "emph": "highlighter"
         },
         {
           "n": 2,
@@ -359,7 +367,9 @@
           "n": 1,
           "mode": "dark",
           "h": "Forty-five minutes.",
-          "b": "The time the outgoing chief has been given to brief the relief."
+          "b": "The time the outgoing chief has been given to brief the relief.",
+          "atmosphere": "green",
+          "emph": "minutes"
         },
         {
           "n": 2,
@@ -440,7 +450,9 @@
           "n": 1,
           "mode": "dark",
           "h": "The cooling pump sat on the shelf for nineteen days.",
-          "b": "Then in stores for two more years."
+          "b": "Then in stores for two more years.",
+          "atmosphere": "teal",
+          "emph": "nineteen"
         },
         {
           "n": 2,
@@ -521,7 +533,8 @@
           "n": 1,
           "mode": "dark",
           "h": "The fire suppression certificate.",
-          "b": "Sent by email from the contractor to the captain. Filed in the inbox."
+          "b": "Sent by email from the contractor to the captain. Filed in the inbox.",
+          "atmosphere": "red"
         },
         {
           "n": 2,
@@ -600,9 +613,10 @@
         {
           "n": 1,
           "mode": "dark",
-          "atmosphere": "red",
+          "atmosphere": "amber",
           "h": "The starboard generator high-temp alarm.",
-          "b": "Three times in eighteen months."
+          "b": "Three times in eighteen months.",
+          "emph": "alarm"
         },
         {
           "n": 2,
@@ -682,7 +696,9 @@
           "n": 1,
           "mode": "dark",
           "h": "The safety equipment certificate expired in port.",
-          "b": "The captain was at sea when it lapsed."
+          "b": "The captain was at sea when it lapsed.",
+          "atmosphere": "green",
+          "emph": "expired"
         },
         {
           "n": 2,
@@ -764,7 +780,9 @@
           "n": 1,
           "mode": "dark",
           "h": "The captain forwarded the supplier's note about the gyro.",
-          "b": "Last March. To the chief."
+          "b": "Last March. To the chief.",
+          "atmosphere": "red",
+          "emph": "forwarded"
         },
         {
           "n": 2,
@@ -844,7 +862,9 @@
           "n": 1,
           "mode": "dark",
           "h": "The yard delivered the drawing in 2018.",
-          "b": "Stamped. Signed. The most authoritative document on the vessel."
+          "b": "Stamped. Signed. The most authoritative document on the vessel.",
+          "atmosphere": "amber",
+          "emph": "2018"
         },
         {
           "n": 2,
@@ -925,7 +945,9 @@
           "n": 1,
           "mode": "dark",
           "h": "Twelve gigabytes of the engine room. On a phone.",
-          "b": "A crew member's camera roll. Before the refit. Before the controller was replaced."
+          "b": "A crew member's camera roll. Before the refit. Before the controller was replaced.",
+          "atmosphere": "teal",
+          "emph": "phone"
         },
         {
           "n": 2,
