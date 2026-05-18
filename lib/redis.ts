@@ -101,6 +101,23 @@ export async function listCaptures(): Promise<CaptureRow[]> {
   return out;
 }
 
+// ─── Generic KV (used for LinkedIn report cache + rotated token) ─────
+
+export async function kvGet(key: string): Promise<string | null> {
+  return client().get(key);
+}
+
+export async function kvSet(key: string, val: string, ttlSec?: number): Promise<void> {
+  if (ttlSec && ttlSec > 0) await client().set(key, val, "EX", ttlSec);
+  else await client().set(key, val);
+}
+
+/** Best-effort lock: returns true if acquired. */
+export async function kvLock(key: string, ttlSec: number): Promise<boolean> {
+  const res = await client().set(key, "1", "EX", ttlSec, "NX");
+  return res === "OK";
+}
+
 export async function appendCapture(c: CaptureRow): Promise<void> {
   const r = client();
   await r.rpush(CAPTURES_KEY, JSON.stringify(c));

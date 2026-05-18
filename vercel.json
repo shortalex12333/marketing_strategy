@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/linkedin-pages?refresh=1", "schedule": "0 6 * * *" }
+  ]
+}

@@ -7,7 +7,23 @@ import type {
   CaptureRow,
 } from "@/lib/types";
 
-type Tab = "dashboard" | "posts" | "analytics" | "bank" | "briefs" | "drafts" | "schedule" | "roadmap";
+type Tab = "dashboard" | "schedule" | "roadmap" | "pages" | "posts" | "analytics" | "bank" | "briefs" | "drafts";
+
+interface PageReport {
+  fetched_at: string;
+  org: string;
+  posts: Array<{
+    urn: string; type: string; caption: string; published: string;
+    lifecycle: string; impressions: number; clicks: number;
+    reactions: number; comments: number; ctr: string;
+  }>;
+  by_type: Record<string, { n: number; impressions: number; clicks: number; reactions: number }>;
+  visitors_360d: number | null;
+  followers_360d: number | null;
+  notes: string;
+  _source?: string;
+  _age_min?: number;
+}
 
 interface RoadmapSlide {
   n: number;
@@ -204,6 +220,8 @@ export default function Page() {
   const [drafts, setDrafts] = useState<DraftsResponse | null>(null);
   const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
   const [roadmap, setRoadmap] = useState<RoadmapResponse | null>(null);
+  const [pageReport, setPageReport] = useState<PageReport | null>(null);
+  const [pagesLoading, setPagesLoading] = useState(false);
   const [expandedDraft, setExpandedDraft] = useState<string | null>(null);
   const [expandedRoadmap, setExpandedRoadmap] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; kind: "success" | "error" } | null>(null);
@@ -251,6 +269,16 @@ export default function Page() {
     if (r.ok) setSchedule(await r.json());
   }, []);
 
+  const loadPages = useCallback(async (force = false) => {
+    setPagesLoading(true);
+    try {
+      const r = await fetch("/api/linkedin-pages" + (force ? "?refresh=1" : ""), { cache: "no-store" });
+      if (r.ok) setPageReport(await r.json());
+    } finally {
+      setPagesLoading(false);
+    }
+  }, []);
+
   const loadRoadmap = useCallback(async () => {
     const r = await fetch("/api/roadmap");
     if (r.ok) setRoadmap(await r.json());
@@ -275,7 +303,8 @@ export default function Page() {
       if (!drafts) loadDrafts();
     }
     if (tab === "roadmap" && !roadmap) loadRoadmap();
-  }, [tab, loadAnalytics, loadBank, loadDrafts, loadSchedule, loadRoadmap, drafts, schedule, roadmap]);
+    if (tab === "pages" && !pageReport) loadPages();
+  }, [tab, loadAnalytics, loadBank, loadDrafts, loadSchedule, loadRoadmap, loadPages, drafts, schedule, roadmap, pageReport]);
 
   const handleDraftSaved = (id: string, patch: { caption?: string; body?: string }) => {
     if (!drafts) return;
@@ -382,7 +411,7 @@ export default function Page() {
       </header>
 
       <nav className="tabs">
-        {(["dashboard", "schedule", "roadmap", "posts", "analytics", "bank", "briefs", "drafts"] as Tab[]).map((t) => (
+        {(["dashboard", "schedule", "roadmap", "pages", "posts", "analytics", "bank", "briefs", "drafts"] as Tab[]).map((t) => (
           <button key={t} className={`tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -645,6 +674,83 @@ export default function Page() {
               </>
             ) : (
               <div className="panel"><div className="empty">Loading drafts…</div></div>
+            )}
+          </>
+        )}
+
+        {tab === "pages" && (
+          <>
+            <div className="panel">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+                <h2 style={{ margin: 0 }}>CelesteOS Page Analytics · live from LinkedIn (DMA API)</h2>
+                <button className="ghost" onClick={() => loadPages(true)} disabled={pagesLoading}>
+                  {pagesLoading ? "Fetching…" : "Refresh from LinkedIn"}
+                </button>
+              </div>
+              {pageReport && (
+                <p className="small" style={{ marginTop: 8 }}>
+                  fetched {fmtDate(pageReport.fetched_at)} · source: {pageReport._source}
+                  {pageReport._age_min != null ? ` · ${pageReport._age_min}m old` : ""} · org {pageReport.org}
+                </p>
+              )}
+            </div>
+
+            {!pageReport ? (
+              <div className="panel"><div className="empty">{pagesLoading ? "Fetching from LinkedIn (one feed call, rate-limited)…" : "Loading…"}</div></div>
+            ) : (
+              <>
+                <div className="stat-grid">
+                  <Stat label="Posts" value={pageReport.posts.length} hint="company page, last 360d" />
+                  <Stat label="Visitors 360d" value={pageReport.visitors_360d ?? "—"} hint="unique page visitors" />
+                  <Stat label="Followers 360d" value={pageReport.followers_360d ?? "0*"} hint="*member opt-in gated" />
+                  <Stat label="Top post impr." value={pageReport.posts[0]?.impressions ?? 0} hint={pageReport.posts[0]?.type ?? ""} />
+                </div>
+
+                <div className="panel">
+                  <h2>Segment by post type (reverse-engineer what works)</h2>
+                  <table>
+                    <thead><tr><th>Type</th><th>Posts</th><th>Total impr.</th><th>Avg impr./post</th><th>Total clicks</th><th>Total reactions</th></tr></thead>
+                    <tbody>
+                      {Object.entries(pageReport.by_type)
+                        .sort((a, b) => (b[1].impressions / b[1].n) - (a[1].impressions / a[1].n))
+                        .map(([t, v]) => (
+                          <tr key={t}>
+                            <td><span className="tag">{t}</span></td>
+                            <td className="mono">{v.n}</td>
+                            <td className="mono">{v.impressions}</td>
+                            <td className="mono" style={{ color: "var(--teal)" }}>{Math.round(v.impressions / v.n)}</td>
+                            <td className="mono">{v.clicks}</td>
+                            <td className="mono">{v.reactions}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="panel">
+                  <h2>Every post · sorted by impressions</h2>
+                  <table>
+                    <thead><tr><th>Type</th><th>Caption</th><th>Published</th><th>Impr.</th><th>Clicks</th><th>React</th><th>Comm</th><th>CTR</th></tr></thead>
+                    <tbody>
+                      {pageReport.posts.map((p) => (
+                        <tr key={p.urn}>
+                          <td><span className="tag">{p.type}</span></td>
+                          <td style={{ maxWidth: 420 }}>
+                            <span title={p.caption}>{p.caption ? (p.caption.length > 90 ? p.caption.slice(0, 90) + "…" : p.caption) : <span className="small" style={{ color: "var(--text-2)" }}>(no caption / media-only)</span>}</span>
+                          </td>
+                          <td className="mono small">{p.published}</td>
+                          <td className="mono">{p.impressions}</td>
+                          <td className="mono">{p.clicks}</td>
+                          <td className="mono">{p.reactions}</td>
+                          <td className="mono">{p.comments}</td>
+                          <td className="mono" style={{ color: "var(--teal)" }}>{p.ctr}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p className="small" style={{ marginTop: 12, color: "var(--text-2)" }}>{pageReport.notes}</p>
+                </div>
+              </>
             )}
           </>
         )}
