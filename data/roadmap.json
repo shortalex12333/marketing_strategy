@@ -116,7 +116,8 @@
           "n": 1,
           "mode": "dark",
           "h": "The port watermaker is degrading.",
-          "b": "TDS readings slipping. Recovery rate down 12% in six weeks."
+          "b": "TDS readings slipping. Recovery rate down 12% in six weeks.",
+          "bg_variant": "G_engineroom"
         },
         {
           "n": 2,
