@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { appendCapture, getPost, listCaptures, putPost } from "@/lib/redis";
+import { appendCapture, listCaptures } from "@/lib/supabase";
 import { checkBearer } from "@/lib/auth";
 import { eqs } from "@/lib/eqs";
 import type { CaptureRow, Checkpoint } from "@/lib/types";
@@ -9,12 +9,16 @@ export const dynamic = "force-dynamic";
 const VALID_CHECKPOINTS: Checkpoint[] = ["30m", "60m", "6h", "24h"];
 
 export async function GET() {
-  const rows = await listCaptures();
-  const enriched = rows.map((r) => ({
-    ...r,
-    eqs: eqs(r.impressions, r.reactions, r.comments, r.reposts, r.saves, r.clicks),
-  }));
-  return NextResponse.json(enriched);
+  try {
+    const rows = await listCaptures();
+    const enriched = rows.map((r) => ({
+      ...r,
+      eqs: eqs(r.impressions, r.reactions, r.comments, r.reposts, r.saves, r.clicks),
+    }));
+    return NextResponse.json(enriched);
+  } catch (e) {
+    return NextResponse.json({ error: "li_captures query failed", detail: String(e) }, { status: 500 });
+  }
 }
 
 export async function POST(req: Request) {
@@ -52,24 +56,10 @@ export async function POST(req: Request) {
     error: String(body.error || ""),
   };
 
-  await appendCapture(row);
-
-  // Also stamp the checkpoint into the post's captures map for the UI pills
-  const post = await getPost(row.post_id);
-  if (post) {
-    post.captures = post.captures || {};
-    post.captures[checkpoint as Checkpoint] = {
-      captured_at: row.captured_at_utc,
-      impressions: row.impressions,
-      reactions: row.reactions,
-      comments: row.comments,
-      reposts: row.reposts,
-      saves: row.saves,
-      clicks: row.clicks,
-      error: row.error || null,
-    };
-    await putPost(post);
+  try {
+    await appendCapture(row);
+    return NextResponse.json({ ok: true, row });
+  } catch (e) {
+    return NextResponse.json({ error: "li_captures insert failed", detail: String(e) }, { status: 500 });
   }
-
-  return NextResponse.json({ ok: true, row });
 }
