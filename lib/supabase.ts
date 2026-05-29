@@ -212,20 +212,25 @@ export async function listAugmentedPosts(): Promise<AugmentedPost[]> {
   }
   return posts.map((p) => {
     const list = byPost[p.id] || [];
-    const latest = list[list.length - 1] || null;
-    const e = latest
+    // Prefer the latest row that actually has impressions (skipping
+    // rate-limited / not_yet_in_api error rows). Fall back to the
+    // last row if every reading is an error so the UI still shows something.
+    const latestValid = [...list]
+      .reverse()
+      .find((c) => c.impressions != null && !c.error) || list[list.length - 1] || null;
+    const e = latestValid
       ? eqs(
-          latest.impressions,
-          latest.reactions,
-          latest.comments,
-          latest.reposts,
-          latest.saves,
-          latest.clicks
+          latestValid.impressions,
+          latestValid.reactions,
+          latestValid.comments,
+          latestValid.reposts,
+          latestValid.saves,
+          latestValid.clicks
         )
       : null;
     return {
       ...p,
-      _latest_capture: latest ? dbCaptureToSummary(latest) : null,
+      _latest_capture: latestValid ? dbCaptureToSummary(latestValid) : null,
       _captures_count: list.length,
       _eqs: e,
     };
