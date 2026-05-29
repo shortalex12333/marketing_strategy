@@ -2,6 +2,7 @@
   "version": "2026-05-18-cover-system",
   "source": "Wave-1 + Wave-2 carousel pipeline · text-only posts retired by CEO 2026-05-15",
   "fix_log": [
+    "2026-05-29: All captions stripped of trailing `celeste7.ai` per CEO standing rule (2026-05-29 post-18 5-imp diagnostic — external link in body = 45-55% reach penalty per SKILL.md §17.2). Caption now ends on buyer-quoteable line. No URL, no CTA verb. See feedback_no_celeste7_ai_in_captions_2026_05_29.md.",
     "2026-05-29: alt_text fields rewritten to ≤58 chars per LinkedIn Document-level alt-text UI limit (CEO 2026-05-29: \"Please limit your title to 58 characters\"). Rewrites for post-2/3/5 (existing >58) + post-10/13 (added — were empty) + post-18 (used CEO's example verbatim: \"Chief inherits a vessel mid-rotation and finds faults\"). post-6/7/8/9/11/12/14/15/16/17 left empty (killed/demoted, won't ship).",
     "2026-05-28: Pivot slate triage. KILLED (approval_status='killed-2026-05-28-not-handover-class'): post-5/6/7/8/9/11/12/14/16/17 — not handover-class, not repeat-fault-class. DEMOTED (approval_status='pending-post-18-reach'): post-15 — chase-the-predecessor variant, redundant with post-18 if shipped adjacent. ADDED: post-18 chase-the-predecessor (rm-chase-predecessor in roadmap.json). Source: feedback_one_pain_class_one_facet_per_carousel.md, feedback_painkiller_universe_per_research_2026_05_28.md.",
     "2026-05-18: Cover system — slide-1 big-type (102px, breaks §5.2 lock for slide 1 only), pure-CSS moodboard-03 atmosphere glow varied per schedule-adjacent ship (no two consecutive alike), Cormorant-italic emphasis word. No backdrop photos (research: generic imagery underperforms; type is the hook). CEO 'get creative, kill staleness'.",
@@ -36,7 +37,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native chain/handover_doc cards",
       "pdf_url": "/carousels/post-2-handover.pdf",
-      "caption": "A chief joins a vessel mid-season. The previous chief is gone. There was no overlap.\n\nThe handover doc on the shared drive is a Word file with seven fonts and four authors. The next engineer rebuilds context for three days.\n\nEight months of operational context, compiled and signed by the outgoing chief, replaces two days of verbal briefing.\n\nceleste7.ai",
+      "caption": "A chief joins a vessel mid-season. The previous chief is gone. There was no overlap.\n\nThe handover doc on the shared drive is a Word file with seven fonts and four authors. The next engineer rebuilds context for three days.\n\nEight months of operational context, compiled and signed by the outgoing chief, replaces two days of verbal briefing.",
       "alt_text": "Chief joins vessel mid-season. No handover overlap.",
       "slides": [
         {
@@ -124,7 +125,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native chain/handover_doc cards",
       "pdf_url": "/carousels/post-3-chain-primer.pdf",
-      "caption": "Every yacht PMS has the modules. Almost none make the connections.\n\nThe fault, the work order, the part, the supplier, the audit trail — five rings. Each present in every PMS. Each isolated from the others.\n\nThat is cohabitation, not integration.\n\nThe Cross-Domain Chain is what a maintenance system looks like when the rings are linked. One fault opens its work order, surfaces its parts, names its supplier, and signs its audit row — without a single module change.\n\nceleste7.ai",
+      "caption": "Every yacht PMS has the modules. Almost none make the connections.\n\nThe fault, the work order, the part, the supplier, the audit trail — five rings. Each present in every PMS. Each isolated from the others.\n\nThat is cohabitation, not integration.\n\nThe Cross-Domain Chain is what a maintenance system looks like when the rings are linked. One fault opens its work order, surfaces its parts, names its supplier, and signs its audit row — without a single module change.",
       "alt_text": "Every PMS has fault, WO, parts. Few link them.",
       "slides": [
         {
@@ -207,7 +208,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · audit_stack card now built (no longer chain fallback)",
       "pdf_url": "/carousels/post-5-inspector.pdf",
-      "caption": "A port state inspector steps aboard. A few minutes to produce three years of records.\n\nAn invoice is not a record. A signed work order is. A familiarisation log signed at the time, not the morning of the inspection, is.\n\nEvery read, every write, every signature: attributed, timestamped, append-only. Independently verifiable in the inspector's own browser at verifier.celeste7.ai.\n\nThe audit trail is not a feature. It is a legal defence.\n\nceleste7.ai",
+      "caption": "A port state inspector steps aboard. A few minutes to produce three years of records.\n\nAn invoice is not a record. A signed work order is. A familiarisation log signed at the time, not the morning of the inspection, is.\n\nEvery read, every write, every signature: attributed, timestamped, append-only.\n\nThe audit trail is not a feature. It is a legal defence.",
       "alt_text": "Inspector boards. Records scattered.",
       "slides": [
         {
@@ -290,7 +291,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-6-notebook.pdf",
-      "caption": "Every vessel has a notebook. A drawer. A diary. Fault codes scratched in margins. Workarounds noted in the back. Suppliers known only by first name.\n\nThe notebook is the most accurate document on the vessel. It is also the only one that leaves with the engineer who wrote it.\n\nceleste7.ai",
+      "caption": "Every vessel has a notebook. A drawer. A diary. Fault codes scratched in margins. Workarounds noted in the back. Suppliers known only by first name.\n\nThe notebook is the most accurate document on the vessel. It is also the only one that leaves with the engineer who wrote it.",
       "slides": [
         {
           "n": 1,
@@ -374,7 +375,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-7-watermaker.pdf",
-      "caption": "The port watermaker is degrading. You log it. Move on. Three weeks later you order the wrong membrane. The right one was already aboard — bought during the last refit, logged against a different equipment record.\n\nYou did not need to remember. The system did.\n\nceleste7.ai",
+      "caption": "The port watermaker is degrading. You log it. Move on. Three weeks later you order the wrong membrane. The right one was already aboard — bought during the last refit, logged against a different equipment record.\n\nYou did not need to remember. The system did.",
       "slides": [
         {
           "n": 1,
@@ -458,7 +459,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-8-yard-invoice.pdf",
-      "caption": "The yard invoice said stabiliser system serviced. The hydraulic fluid was never changed. Twelve months later the stabiliser failed under warranty. The claim was denied.\n\nA denied warranty claim on a main engine or generator runs between €20,000 and €100,000. The maintenance is usually done. The proof is the issue.\n\nAn invoice is not a record. A signed work order is.\n\nceleste7.ai",
+      "caption": "The yard invoice said stabiliser system serviced. The hydraulic fluid was never changed. Twelve months later the stabiliser failed under warranty. The claim was denied.\n\nA denied warranty claim on a main engine or generator runs between €20,000 and €100,000. The maintenance is usually done. The proof is the issue.\n\nAn invoice is not a record. A signed work order is.",
       "slides": [
         {
           "n": 1,
@@ -542,7 +543,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-9-saturday-audit.pdf",
-      "caption": "Fourteen crew. Three weeks of hours-of-rest forms. One highlighter. The compliance audit, done by hand at the helm desk.\n\nEvery PMS shows what was signed. None of them show who has not. The gap takes forty minutes to find by hand.\n\nOr it announces itself.\n\nceleste7.ai",
+      "caption": "Fourteen crew. Three weeks of hours-of-rest forms. One highlighter. The compliance audit, done by hand at the helm desk.\n\nEvery PMS shows what was signed. None of them show who has not. The gap takes forty minutes to find by hand.\n\nOr it announces itself.",
       "slides": [
         {
           "n": 1,
@@ -625,7 +626,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-10-45-minutes.pdf",
-      "caption": "Forty-five minutes is what the outgoing chief is given. Two years aboard. Forty-five minutes to transfer it.\n\nThe relief nods, takes notes, asks the questions he can think to ask. He will discover the questions he should have asked over the next six months. Every time something breaks.\n\nForty-five minutes determines two years.\n\nceleste7.ai",
+      "caption": "Forty-five minutes is what the outgoing chief is given. Two years aboard. Forty-five minutes to transfer it.\n\nThe relief nods, takes notes, asks the questions he can think to ask. He will discover the questions he should have asked over the next six months. Every time something breaks.\n\nForty-five minutes determines two years.",
       "slides": [
         {
           "n": 1,
@@ -710,7 +711,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-11-part-on-shelf.pdf",
-      "caption": "The cooling pump was ordered twice. Different chief. Different fault. Same part number.\n\nThe first one sat on the shelf for nineteen days. Then in stores for two more years.\n\nEvery refit. Every rotation. The stock was already aboard.\n\nceleste7.ai",
+      "caption": "The cooling pump was ordered twice. Different chief. Different fault. Same part number.\n\nThe first one sat on the shelf for nineteen days. Then in stores for two more years.\n\nEvery refit. Every rotation. The stock was already aboard.",
       "slides": [
         {
           "n": 1,
@@ -794,7 +795,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-12-inbox.pdf",
-      "caption": "The contractor sent the fire suppression certificate by email. The email landed in the captain's inbox.\n\nThe captain left six months later. The inbox was deactivated within a week.\n\nThe vessel paid for the certificate and lost it on the same day.\n\nceleste7.ai",
+      "caption": "The contractor sent the fire suppression certificate by email. The email landed in the captain's inbox.\n\nThe captain left six months later. The inbox was deactivated within a week.\n\nThe vessel paid for the certificate and lost it on the same day.",
       "slides": [
         {
           "n": 1,
@@ -876,7 +877,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-13-repeat-fault.pdf",
-      "caption": "The starboard generator alarmed three times in eighteen months. Three different chiefs. Three first-time diagnoses. €1,900 per recurrence in external technician time.\n\nThe fix was in the system the whole time. Filed in someone else's rotation. Unreachable by the chief on duty.\n\nThe same diagnostic path is not walked twice.\n\nceleste7.ai",
+      "caption": "The starboard generator alarmed three times in eighteen months. Three different chiefs. Three first-time diagnoses. €1,900 per recurrence in external technician time.\n\nThe fix was in the system the whole time. Filed in someone else's rotation. Unreachable by the chief on duty.\n\nThe same diagnostic path is not walked twice.",
       "slides": [
         {
           "n": 1,
@@ -961,7 +962,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-14-certificate-in-port.pdf",
-      "caption": "The safety equipment certificate expired in port. The captain who knew was on shore leave. The captain aboard had not been told to look.\n\nTwelve certificates expire each year. Two captains rotate through each calendar. The gap is ashore if nobody owns the bridge.\n\nCert × calendar × rotation — three systems, one decision.\n\nceleste7.ai",
+      "caption": "The safety equipment certificate expired in port. The captain who knew was on shore leave. The captain aboard had not been told to look.\n\nTwelve certificates expire each year. Two captains rotate through each calendar. The gap is ashore if nobody owns the bridge.\n\nCert × calendar × rotation — three systems, one decision.",
       "slides": [
         {
           "n": 1,
@@ -1045,7 +1046,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-15-captain-email.pdf",
-      "caption": "The captain forwarded the supplier's note about the gyro last March. The chief was on rotation. He read it on a Tuesday. He did not reply.\n\nNine months later the gyro fails. The supplier's note had named the failure mode. The vessel does not have the note.\n\nCorrespondence is operational truth. Treat it like one.\n\nceleste7.ai",
+      "caption": "The captain forwarded the supplier's note about the gyro last March. The chief was on rotation. He read it on a Tuesday. He did not reply.\n\nNine months later the gyro fails. The supplier's note had named the failure mode. The vessel does not have the note.\n\nCorrespondence is operational truth. Treat it like one.",
       "slides": [
         {
           "n": 1,
@@ -1128,7 +1129,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-16-drawing.pdf",
-      "caption": "The yard delivered the drawing in 2018. Stamped. Signed. The most authoritative document on the vessel.\n\nSix refits later, the drawing is a fiction. The wiring changed. The valve was rerouted. The starboard pump was moved port. None of it went back to the yard.\n\nThe drawing is still the most authoritative document. That is the problem.\n\nceleste7.ai",
+      "caption": "The yard delivered the drawing in 2018. Stamped. Signed. The most authoritative document on the vessel.\n\nSix refits later, the drawing is a fiction. The wiring changed. The valve was rerouted. The starboard pump was moved port. None of it went back to the yard.\n\nThe drawing is still the most authoritative document. That is the problem.",
       "slides": [
         {
           "n": 1,
@@ -1212,7 +1213,7 @@
       "render_required": true,
       "render_status": "rendered 2026-05-15 · native cards (9 new card types built)",
       "pdf_url": "/carousels/post-17-crew-photos.pdf",
-      "caption": "Twelve gigabytes of the engine room sits on a crew member's phone. Before the refit. Before the controller was replaced.\n\nThe most accurate visual record of the vessel — and the only one the next chief will never see.\n\nThe crew left. The phone left with them.\n\nceleste7.ai",
+      "caption": "Twelve gigabytes of the engine room sits on a crew member's phone. Before the refit. Before the controller was replaced.\n\nThe most accurate visual record of the vessel — and the only one the next chief will never see.\n\nThe crew left. The phone left with them.",
       "slides": [
         {
           "n": 1,
@@ -1295,7 +1296,7 @@
       "render_required": true,
       "render_status": "pending",
       "pdf_url": "/carousels/post-18-chase-predecessor.pdf",
-      "caption": "A chief joins a vessel six weeks into a rotation. An alarm pattern he hasn't seen before. The previous engineer would know — he ran this boat for two years. He left a forwarding number that no longer works. His personal mobile is six hours ahead and showing offline.\n\nThe vessel does not answer questions. Only people do. And the person who could is on a beach in Thailand with a number that has been deactivated.\n\nThe vessel's knowledge, kept where the next person can reach it.\n\nceleste7.ai",
+      "caption": "A chief joins a vessel six weeks into a rotation. An alarm pattern he hasn't seen before. The previous engineer would know — he ran this boat for two years. He left a forwarding number that no longer works. His personal mobile is six hours ahead and showing offline.\n\nThe vessel does not answer questions. Only people do. And the person who could is on a beach in Thailand with a number that has been deactivated.\n\nThe vessel's knowledge, kept where the next person can reach it.",
       "alt_text": "Chief inherits a vessel mid-rotation and finds faults",
       "slides_ref": "data/roadmap.json:carousels[id=rm-chase-predecessor].slides"
     }
