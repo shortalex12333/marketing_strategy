@@ -2,6 +2,7 @@
   "version": "2026-05-18-cover-system",
   "source": "Wave-1 + Wave-2 carousel pipeline · text-only posts retired by CEO 2026-05-15",
   "fix_log": [
+    "2026-05-29: alt_text fields rewritten to ≤58 chars per LinkedIn Document-level alt-text UI limit (CEO 2026-05-29: \"Please limit your title to 58 characters\"). Rewrites for post-2/3/5 (existing >58) + post-10/13 (added — were empty) + post-18 (used CEO's example verbatim: \"Chief inherits a vessel mid-rotation and finds faults\"). post-6/7/8/9/11/12/14/15/16/17 left empty (killed/demoted, won't ship).",
     "2026-05-28: Pivot slate triage. KILLED (approval_status='killed-2026-05-28-not-handover-class'): post-5/6/7/8/9/11/12/14/16/17 — not handover-class, not repeat-fault-class. DEMOTED (approval_status='pending-post-18-reach'): post-15 — chase-the-predecessor variant, redundant with post-18 if shipped adjacent. ADDED: post-18 chase-the-predecessor (rm-chase-predecessor in roadmap.json). Source: feedback_one_pain_class_one_facet_per_carousel.md, feedback_painkiller_universe_per_research_2026_05_28.md.",
     "2026-05-18: Cover system — slide-1 big-type (102px, breaks §5.2 lock for slide 1 only), pure-CSS moodboard-03 atmosphere glow varied per schedule-adjacent ship (no two consecutive alike), Cormorant-italic emphasis word. No backdrop photos (research: generic imagery underperforms; type is the hook). CEO 'get creative, kill staleness'.",
     "2026-05-15: Built 9 card types (audit_stack/inventory_match/fault_history/email_linked/negative_space_query/modification_timeline/photo_gallery/notebook_entry/search_result); re-synced drafts from roadmap; post-5 slide 6 chain→audit_stack",
@@ -36,7 +37,7 @@
       "render_status": "rendered 2026-05-15 · native chain/handover_doc cards",
       "pdf_url": "/carousels/post-2-handover.pdf",
       "caption": "A chief joins a vessel mid-season. The previous chief is gone. There was no overlap.\n\nThe handover doc on the shared drive is a Word file with seven fonts and four authors. The next engineer rebuilds context for three days.\n\nEight months of operational context, compiled and signed by the outgoing chief, replaces two days of verbal briefing.\n\nceleste7.ai",
-      "alt_text": "9-slide carousel: a chief joins a vessel mid-season with no overlap — the Word-doc handover that breaks under pressure — and the CelesteOS handover that compiles from every operational domain, signed, hyperlinked, ready before the relief opens his laptop. Built by a former ETO. celeste7.ai",
+      "alt_text": "Chief joins vessel mid-season. No handover overlap.",
       "slides": [
         {
           "n": 1,
@@ -124,7 +125,7 @@
       "render_status": "rendered 2026-05-15 · native chain/handover_doc cards",
       "pdf_url": "/carousels/post-3-chain-primer.pdf",
       "caption": "Every yacht PMS has the modules. Almost none make the connections.\n\nThe fault, the work order, the part, the supplier, the audit trail — five rings. Each present in every PMS. Each isolated from the others.\n\nThat is cohabitation, not integration.\n\nThe Cross-Domain Chain is what a maintenance system looks like when the rings are linked. One fault opens its work order, surfaces its parts, names its supplier, and signs its audit row — without a single module change.\n\nceleste7.ai",
-      "alt_text": "9-slide carousel: every yacht PMS has the same modules — fault, work order, parts, supplier, audit — and almost none of them connect. The Cross-Domain Chain is the five rings linked end to end. Built by a former ETO. celeste7.ai",
+      "alt_text": "Every PMS has fault, WO, parts. Few link them.",
       "slides": [
         {
           "n": 1,
@@ -207,7 +208,7 @@
       "render_status": "rendered 2026-05-15 · audit_stack card now built (no longer chain fallback)",
       "pdf_url": "/carousels/post-5-inspector.pdf",
       "caption": "A port state inspector steps aboard. A few minutes to produce three years of records.\n\nAn invoice is not a record. A signed work order is. A familiarisation log signed at the time, not the morning of the inspection, is.\n\nEvery read, every write, every signature: attributed, timestamped, append-only. Independently verifiable in the inspector's own browser at verifier.celeste7.ai.\n\nThe audit trail is not a feature. It is a legal defence.\n\nceleste7.ai",
-      "alt_text": "9-slide carousel: a port state inspector steps aboard — the records that exist but do not survive scrutiny — and the CelesteOS audit trail where every action is attributed, timestamped, append-only, and independently verifiable in the inspector's own browser. Built by a former ETO. celeste7.ai",
+      "alt_text": "Inspector boards. Records scattered.",
       "slides": [
         {
           "n": 1,
@@ -684,7 +685,8 @@
           "h": "Control over your complexity.",
           "b": "celeste7.ai"
         }
-      ]
+      ],
+      "alt_text": "Handover loses every claim on the busiest day."
     },
     {
       "id": "post-11",
@@ -934,7 +936,8 @@
           "h": "Control over your complexity.",
           "b": "celeste7.ai"
         }
-      ]
+      ],
+      "alt_text": "Same fault. Three chiefs. Three diagnoses."
     },
     {
       "id": "post-14",
@@ -1293,7 +1296,7 @@
       "render_status": "pending",
       "pdf_url": "/carousels/post-18-chase-predecessor.pdf",
       "caption": "A chief joins a vessel six weeks into a rotation. An alarm pattern he hasn't seen before. The previous engineer would know — he ran this boat for two years. He left a forwarding number that no longer works. His personal mobile is six hours ahead and showing offline.\n\nThe vessel does not answer questions. Only people do. And the person who could is on a beach in Thailand with a number that has been deactivated.\n\nThe vessel's knowledge, kept where the next person can reach it.\n\nceleste7.ai",
-      "alt_text": "9-slide carousel: a chief inherits a vessel mid-rotation and hits a fault the predecessor would have known — that predecessor is unreachable, six hours away, off rotation. CelesteOS surfaces the previous WO, photo, part, and supplier in seconds, inherited into the new chief's record so the next rotation doesn't start over. Built by a former ETO. celeste7.ai",
+      "alt_text": "Chief inherits a vessel mid-rotation and finds faults",
       "slides_ref": "data/roadmap.json:carousels[id=rm-chase-predecessor].slides"
     }
   ]
