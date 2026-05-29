@@ -1002,6 +1002,84 @@
           "b": "celeste7.ai"
         }
       ]
+    },
+    {
+      "slot": "W2-18",
+      "id": "rm-chase-predecessor",
+      "bank_ref": "02_problem_validation.md:11+:47 · chase-the-predecessor facet of validated handover-class painkiller",
+      "hook": "Are you awake?",
+      "pillar": "3 · Artifact Transform · WhatsApp → CelesteOS search result",
+      "usp": "Handover-class painkiller, chase-the-predecessor facet",
+      "targets": [
+        "CE",
+        "ETO"
+      ],
+      "scenario": "Six weeks into rotation, predecessor unreachable",
+      "proposed_day": "Fri 2026-06-05",
+      "atmosphere": "red on slide 4 (cost) → green on slide 9 (reveal)",
+      "emphasis_word": "awake (italic, slide 1)",
+      "why_engages": "Every chief has been on either side of this 11pm message. Pain class = knowledge walks off the boat. Facet = after the handover failed.",
+      "anti_sameness": "WhatsApp artefact (chase) vs. Word doc artefact (handover). Same pain class, different artefact, post-handover moment.",
+      "caption": "A chief joins a vessel six weeks into a rotation. An alarm pattern he hasn't seen before. The previous engineer would know — he ran this boat for two years. He left a forwarding number that no longer works. His personal mobile is six hours ahead and showing offline.\n\nThe vessel does not answer questions. Only people do. And the person who could is on a beach in Thailand with a number that has been deactivated.\n\nThe vessel's knowledge, kept where the next person can reach it.\n\nceleste7.ai",
+      "slides": [
+        {
+          "n": 1,
+          "mode": "dark",
+          "h": "Are you awake?",
+          "b": "<div class='message-bubble'>Hey mate. Quick one if you're around — port genny alarming high coolant temp underway. Known thing? Sorry to bother.<span class='msg-meta'>Sent 23:14 · Delivered · No reply</span></div>",
+          "emph": "awake"
+        },
+        {
+          "n": 2,
+          "mode": "dark",
+          "h": "The vessel does not answer questions.",
+          "b": "The handbook does. The PMS does, after twenty minutes of menus. The previous engineer answered in thirty seconds — when he was here."
+        },
+        {
+          "n": 3,
+          "mode": "dark",
+          "h": "He left six weeks ago.",
+          "b": "His work mobile was deactivated the day he flew home. His personal number shows a six-hour time delta and offline."
+        },
+        {
+          "n": 4,
+          "mode": "dark",
+          "atmosphere": "red",
+          "h": "The fault eats the day either way.",
+          "b": "If he replies, the new chief loses the morning waiting. If he doesn't, the new chief loses the week diagnosing from scratch. The vessel pays for both."
+        },
+        {
+          "n": 5,
+          "mode": "dark",
+          "h": "The vessel knows. The vessel cannot say.",
+          "b": "Every fault he ever closed. Every workaround he ever filed. Every quirk he ever found. All of it lived in his head. None of it lived where the next person could reach it."
+        },
+        {
+          "n": 6,
+          "mode": "light",
+          "h": "The question is asked. Of the system.",
+          "card": "chase_query_result"
+        },
+        {
+          "n": 7,
+          "mode": "light",
+          "h": "Pulled. Cited. Confirmed by the engineer who knows.",
+          "card": "chase_wo_detail"
+        },
+        {
+          "n": 8,
+          "mode": "light",
+          "h": "The next person does not start over.",
+          "card": "rotation_continuity"
+        },
+        {
+          "n": 9,
+          "mode": "light",
+          "atmosphere": "green",
+          "h": "Introducing CelesteOS.",
+          "b": "The vessel's knowledge, kept where the next person can reach it.<br/><br/>Every answer cites its source. The crew decides."
+        }
+      ]
     }
   ]
 }
