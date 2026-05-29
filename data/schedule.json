@@ -1,9 +1,9 @@
 {
-  "version": "2026-05-15-carousel-only",
-  "phase": "Recovery → Ramp · 15 carousels across 6 weeks",
-  "cadence_rule": "3 carousels/week (Mon · Wed · Fri) · upgrade to Phase 2 ramp if recovery confirmed by 2026-06-02",
-  "primary_account": "Alex Short personal (2,200 connections)",
-  "company_page_role": "reshare-only · never originates",
+  "version": "2026-05-28-pivot-narrowed-slate",
+  "phase": "$0 organic compound · CelesteOS page sole asset · 15 carousels across 6 weeks · success = follower-base growth + sustained CTR, NOT per-post reach · 2026-05-28: slate narrowed to handover-class + repeat-fault-class only (post-5/6/7/8/9/11/12/14/16/17 killed; post-15 demoted pending-post-18-reach; post-18 chase-the-predecessor added Fri 2026-06-05)",
+  "cadence_rule": "3 carousels/week (Mon · Wed · Fri) · consistency compounds the follower base · no paid amplification (CEO directive 2026-05-18: ad spend buys reach not conversion)",
+  "primary_account": "CelesteOS company page (sole asset · zero personal involvement)",
+  "company_page_role": "primary · originates ALL content · personal profile never posts, reshares, or comments (CEO directive 2026-05-18 · overrides skill §16/§17.3-step-4 personal-originates canon for this account)",
   "calendar": [
     {
       "post_id": "post-2",
@@ -28,58 +28,14 @@
       "approval_status": "awaiting CEO"
     },
     {
-      "post_id": "post-5",
-      "bank_id": "P-040",
-      "day": "Friday",
-      "date": "2026-05-29",
-      "time_utc": "08:00",
-      "hook": "When the inspector asks.",
-      "format": "carousel",
-      "rationale": "Audit-trail / SRV audience entry · verifier.celeste7.ai first mention.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-6",
-      "bank_id": "Notebook · 149-imp",
-      "day": "Monday",
-      "date": "2026-06-01",
-      "time_utc": "08:00",
-      "hook": "The notebook is the most accurate document on the vessel.",
-      "format": "carousel",
-      "rationale": "Re-ship validated 149-imp throttled · universal CE artifact.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-7",
-      "bank_id": "P-038 · watermaker",
-      "day": "Wednesday",
-      "date": "2026-06-03",
-      "time_utc": "08:00",
-      "hook": "The port watermaker is degrading.",
-      "format": "carousel",
-      "rationale": "'Wait, you can do that?' inventory × fault join · /intelligence verbatim example.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-8",
-      "bank_id": "§B.5 + S.13 · yard invoice",
+      "post_id": "post-18",
+      "bank_id": "02_problem_validation.md:11+:47 · chase-the-predecessor",
       "day": "Friday",
       "date": "2026-06-05",
       "time_utc": "08:00",
-      "hook": "The yard invoice said stabiliser system serviced.",
+      "hook": "Are you awake?",
       "format": "carousel",
-      "rationale": "€20-100k cost-bomb · OWN/SRV audience · invoice→record reframe (prior 61-imp).",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-9",
-      "bank_id": "New · MLC hours-of-rest",
-      "day": "Monday",
-      "date": "2026-06-08",
-      "time_utc": "08:00",
-      "hook": "Fourteen crew. Three weeks of hours-of-rest forms. One highlighter.",
-      "format": "carousel",
-      "rationale": "CO stakeholder · MLC compliance · negative-space query novelty.",
+      "rationale": "Same pain class as P-001 (knowledge walks off the boat), different facet — post-handover chase. First post under 2026-05-28 pivot framework.",
       "approval_status": "awaiting CEO"
     },
     {
@@ -94,28 +50,6 @@
       "approval_status": "awaiting CEO"
     },
     {
-      "post_id": "post-11",
-      "bank_id": "P-033 · part on shelf",
-      "day": "Friday",
-      "date": "2026-06-12",
-      "time_utc": "08:00",
-      "hook": "The cooling pump sat on the shelf for nineteen days.",
-      "format": "carousel",
-      "rationale": "PURSER procurement angle · 'shelf for nineteen days then two years' specificity.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-12",
-      "bank_id": "Inbox · 172-imp",
-      "day": "Monday",
-      "date": "2026-06-15",
-      "time_utc": "08:00",
-      "hook": "The fire suppression certificate.",
-      "format": "carousel",
-      "rationale": "Re-ship validated 172-imp · CAPT/OWN audience · email decay × compliance.",
-      "approval_status": "awaiting CEO"
-    },
-    {
       "post_id": "post-13",
       "bank_id": "§C.4 · repeat fault",
       "day": "Wednesday",
@@ -125,72 +59,28 @@
       "format": "carousel",
       "rationale": "€1,900/recurrence × 3 cost-bomb · cross-rotation memory = the canonical CelesteOS promise.",
       "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-14",
-      "bank_id": "T1.3 · cert × rotation",
-      "day": "Friday",
-      "date": "2026-06-19",
-      "time_utc": "08:00",
-      "hook": "The safety equipment certificate expired in port.",
-      "format": "carousel",
-      "rationale": "Date × person reasoning · 'wait, you can do that?' moment · CAPT stakeholder.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-15",
-      "bank_id": "P-035 · captain email",
-      "day": "Monday",
-      "date": "2026-06-22",
-      "time_utc": "08:00",
-      "hook": "The captain forwarded the supplier's note about the gyro.",
-      "format": "carousel",
-      "rationale": "CAPT-anchored · email-as-knowledge fits /handover claim.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-16",
-      "bank_id": "B.3 · drawing",
-      "day": "Wednesday",
-      "date": "2026-06-24",
-      "time_utc": "08:00",
-      "hook": "The yard delivered the drawing in 2018.",
-      "format": "carousel",
-      "rationale": "Refit scope-setting scenario · YPM stakeholder · untapped surface.",
-      "approval_status": "awaiting CEO"
-    },
-    {
-      "post_id": "post-17",
-      "bank_id": "B.10 · crew photos",
-      "day": "Friday",
-      "date": "2026-06-26",
-      "time_utc": "08:00",
-      "hook": "Twelve gigabytes of the engine room. On a phone.",
-      "format": "carousel",
-      "rationale": "Image domain · CS audience crossover · 12 GB of personal-phone vessel history.",
-      "approval_status": "awaiting CEO"
     }
   ],
   "checkpoints": [
     {
       "date": "2026-05-28",
-      "label": "Day 7 recovery check",
-      "action": "Capture EQS of posts 2 + 3. If 60-min impressions ≥5% of follower count, throttle releasing — continue to week 2."
+      "label": "Day 7 company-page baseline check",
+      "action": "Capture EQS + impressions of posts 2 + 3 against CelesteOS PAGE follower count (fill live count from tools/linkedin_impression_capture.py — do not assume). Company-page healthy benchmark: ≥0.5% of followers at 60 min, 1-3% at 24 h. This is a STRUCTURAL ceiling, not a throttle — small absolute numbers are expected and are NOT content failure. Continue regardless; this checkpoint establishes the compound baseline."
     },
     {
       "date": "2026-06-02",
-      "label": "Day 14 phase gate · decoupled signals",
-      "action": "Two independent reads: (a) THROTTLE-RELEASE — 60-min impressions ≥5% of follower count (~110 on 2,200 connections); (b) EQS QUALITY — saves-weighted EQS trend rising across posts 2-5. Advance cadence only if (a) clears. (b) confirms content health independent of reach. Do NOT gate on '≥30% follower count at 24h' — that is the healthy benchmark, unreachable mid-throttle."
+      "label": "Day 14 compound-health gate · two decoupled signals",
+      "action": "No personal/throttle benchmark applies — company page has a structural 1-3% organic ceiling by design. Two independent reads against the CelesteOS PAGE: (a) FOLLOWER GROWTH — net new page followers trending up across the 14 days (the only metric that compounds; org reach scales with the base, not the post); (b) CTR QUALITY — click-through + saves-weighted EQS holding or rising across posts 2-5, independent of absolute reach. Hold cadence at 3/week regardless; advance nothing on reach. $0 organic compound is a months-long curve — judge the trendline, never a single post's impressions."
     },
     {
       "date": "2026-06-16",
-      "label": "Day 28 mid-ramp review",
-      "action": "Top/bottom 3 EQS across all 7 published carousels. Outliers feed back as derivative formats (per skill §18.5). Anti-pattern check: no repeated USPs in consecutive weeks."
+      "label": "Day 28 mid-compound review",
+      "action": "Top/bottom 3 EQS across all published carousels. Outliers feed back as derivative carousels (NOT cross-posted to other accounts — zero personal/owned-account involvement). Page-follower delta vs. Day 14 = the headline metric. Anti-pattern check: no repeated USPs in consecutive weeks; off-platform follow funnel (site / verifier / email) is the only follower-acquisition lever and must be live."
     },
     {
       "date": "2026-06-30",
       "label": "Day 42 wave-2 close-out",
-      "action": "Full slate retrospective. Decide wave 3 format mix (carousel-exclusive vs. add text+image / website-link extrapolation per CEO 2026-05-15 strategy)."
+      "action": "Full slate retrospective on the CelesteOS page only. Headline question: is the follower base compounding (Day 42 vs Day 0 net followers + CTR trend)? Decide wave 3 format mix (carousel-exclusive vs. add text+image / website-link). $0 organic remains the model unless CEO revisits — paid was rejected 2026-05-18 (reach ≠ conversion)."
     }
   ],
   "next_brief_due": "2026-06-30 (Tuesday) — wave-3 brief generation begins from bank, excluding the 15 IDs in this calendar"
