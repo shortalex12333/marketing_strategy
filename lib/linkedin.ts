@@ -1,21 +1,23 @@
-import { kvGet, kvSet } from "./redis";
-
 /**
  * LinkedIn Pages Data Portability (DMA) fetch + transpose.
  *
  * Rate-safety: the ONLY hard limit is dmaFeedContentsExternal = 1 req / 60s.
- * The route layer gates live fetches behind a 6h Redis freshness window, so
- * the feed endpoint is hit ≤ ~1×/6h regardless of UI traffic.
+ * The route layer gates live fetches behind a 6h in-memory freshness window
+ * (linkedin-pages route), so the feed endpoint is hit ≤ ~1×/6h.
  *
- * Token: prefers a rotated token in Redis (linkedin:access_token), falls back
- * to LINKEDIN_ACCESS_TOKEN env. On 401 it refreshes via the refresh token and
- * writes the new token to Redis (no redeploy needed for 60-day expiry).
+ * Token: in-memory cache of rotated tokens (replaces Redis as of 2026-05-30).
+ * On cold start the cache is empty and we use LINKEDIN_ACCESS_TOKEN from env;
+ * on 401 we refresh via refresh_token and stash the new token in memory.
+ * Worst case at cold start = one extra refresh per warm-up cycle. Acceptable.
  */
 
 const API = "https://api.linkedin.com/rest";
 const VERSION = "202605";
-const ACCESS_KEY = "linkedin:access_token";
-const REFRESH_KEY = "linkedin:refresh_token";
+
+// Module-level token cache. Survives across warm function invocations;
+// cold start falls back to env tokens.
+let _accessTokenCache: string | null = null;
+let _refreshTokenCache: string | null = null;
 
 function env(k: string): string {
   const v = process.env[k];
@@ -24,11 +26,11 @@ function env(k: string): string {
 }
 
 async function currentToken(): Promise<string> {
-  return (await kvGet(ACCESS_KEY)) || env("LINKEDIN_ACCESS_TOKEN");
+  return _accessTokenCache || env("LINKEDIN_ACCESS_TOKEN");
 }
 
 async function refreshToken(): Promise<string> {
-  const refresh = (await kvGet(REFRESH_KEY)) || env("LINKEDIN_REFRESH_TOKEN");
+  const refresh = _refreshTokenCache || env("LINKEDIN_REFRESH_TOKEN");
   const body = new URLSearchParams({
     grant_type: "refresh_token",
     refresh_token: refresh,
@@ -42,8 +44,8 @@ async function refreshToken(): Promise<string> {
   });
   if (!r.ok) throw new Error(`token refresh failed ${r.status}`);
   const j = await r.json();
-  await kvSet(ACCESS_KEY, j.access_token, 50 * 24 * 3600);
-  if (j.refresh_token) await kvSet(REFRESH_KEY, j.refresh_token, 360 * 24 * 3600);
+  _accessTokenCache = j.access_token as string;
+  if (j.refresh_token) _refreshTokenCache = j.refresh_token as string;
   return j.access_token as string;
 }
 
@@ -240,4 +242,3 @@ export async function buildPageReport(): Promise<PageReport> {
   return report;
 }
 
-export const REPORT_KEY = "linkedin:pages:report";
