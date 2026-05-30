@@ -1,46 +1,44 @@
 import { NextResponse } from "next/server";
-import { buildPageReport, REPORT_KEY } from "@/lib/linkedin";
-import { kvGet, kvSet, kvLock } from "@/lib/redis";
+import { buildPageReport } from "@/lib/linkedin";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-const FRESH_MS = 6 * 60 * 60 * 1000; // serve cache <6h old; gates feed API to ≤1/6h
+/**
+ * In-memory cache replaces the Redis kvGet/kvSet/kvLock dance.
+ * Module-level state survives across warm function invocations on Vercel
+ * Fluid Compute. On cold start the cache rebuilds; the linkedin feed API
+ * is gated to ≤1/60s upstream so the worst case is a single rebuild per
+ * cold-start request. Low traffic = lock not needed.
+ */
+
+const FRESH_MS = 6 * 60 * 60 * 1000;
+interface CachedReport {
+  fetched_at?: string;
+  [k: string]: unknown;
+}
+let _cache: CachedReport | null = null;
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const force = url.searchParams.get("refresh") === "1";
 
-  let cached: { fetched_at?: string } | null = null;
-  try {
-    const raw = await kvGet(REPORT_KEY);
-    if (raw) cached = JSON.parse(raw);
-  } catch { /* ignore */ }
-
-  const ageMs = cached?.fetched_at
-    ? Date.now() - new Date(cached.fetched_at).getTime()
+  const ageMs = _cache?.fetched_at
+    ? Date.now() - new Date(_cache.fetched_at).getTime()
     : Infinity;
 
-  if (cached && ageMs < FRESH_MS && !force) {
-    return NextResponse.json({ ...cached, _source: "cache", _age_min: Math.round(ageMs / 60000) });
-  }
-
-  // Stale (or forced). Lock so concurrent requests don't double-hit the
-  // 1-req/60s feed endpoint. Loser serves stale cache.
-  const got = await kvLock("linkedin:pages:lock", 180);
-  if (!got) {
-    if (cached) return NextResponse.json({ ...cached, _source: "stale (refresh in progress)" });
-    return NextResponse.json({ error: "refresh in progress, no cache yet" }, { status: 503 });
+  if (_cache && ageMs < FRESH_MS && !force) {
+    return NextResponse.json({ ..._cache, _source: "cache", _age_min: Math.round(ageMs / 60000) });
   }
 
   try {
     const report = await buildPageReport();
-    await kvSet(REPORT_KEY, JSON.stringify(report), 7 * 24 * 3600);
+    _cache = report as unknown as CachedReport;
     return NextResponse.json({ ...report, _source: "live" });
   } catch (e) {
-    if (cached) {
+    if (_cache) {
       return NextResponse.json({
-        ...cached,
+        ..._cache,
         _source: "stale (live fetch failed)",
         _error: String(e),
       });

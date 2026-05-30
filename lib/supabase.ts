@@ -324,3 +324,40 @@ export async function listSchedule(): Promise<DbSchedule[]> {
   if (error) throw error;
   return (data || []) as DbSchedule[];
 }
+
+// ─── Post bank (li_post_bank) ────────────────────────────────────────
+
+import type { BankEntry } from "./types";
+
+interface DbPostBank {
+  bank_id: string;
+  hook: string;
+  usp: string | null;
+  pain_class: string | null;
+  facet: string | null;
+  md_ref: string | null;
+  description: string | null;
+  status: string;
+}
+
+export async function listBank(): Promise<BankEntry[]> {
+  const { data, error } = await supa()
+    .from("li_post_bank")
+    .select("*")
+    .order("bank_id", { ascending: true });
+  if (error) throw error;
+  return (data || []).map((b: DbPostBank) => {
+    const desc = b.description || "";
+    const sepIdx = desc.indexOf(" | ");
+    return {
+      id: b.bank_id,
+      hook: b.hook,
+      usp: b.usp || "",
+      targets: "",
+      scenario: b.facet || "",
+      angle: sepIdx > 0 ? desc.slice(0, sepIdx) : desc,
+      why_it_lands: sepIdx > 0 ? desc.slice(sepIdx + 3) : "",
+      anchor: b.md_ref || "",
+    };
+  });
+}

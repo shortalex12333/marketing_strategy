@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { listPosts, listCaptures } from "@/lib/redis";
+import { listPosts, listCaptures } from "@/lib/supabase";
 import { loadBank } from "@/lib/bank";
 import { eqs } from "@/lib/eqs";
-import type { BankEntry, CaptureRow } from "@/lib/types";
+import type { BankEntry } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
