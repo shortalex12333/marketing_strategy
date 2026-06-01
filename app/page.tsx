@@ -819,7 +819,7 @@ export default function Page() {
                               </div>
                               <div>
                                 <h3>Targets · scenario</h3>
-                                <p className="small mono">{c.targets.join(" · ")}</p>
+                                <p className="small mono">{(c.targets ?? []).join(" · ")}</p>
                                 <p className="small">{c.scenario}</p>
                                 <h3 style={{ marginTop: 14 }}>Atmosphere · emphasis</h3>
                                 <p className="small mono" style={{ color: atmoColours(c.atmosphere) }}>{c.atmosphere}</p>
@@ -1063,7 +1063,7 @@ function DraftDetail({
         </div>
         <div>
           <h3>Targets · Scenario</h3>
-          <p className="small mono">{d.targets.join(" · ")}</p>
+          <p className="small mono">{(d.targets ?? []).join(" · ")}</p>
           <p className="small">{d.scenario}</p>
           <p className="small mono" style={{ marginTop: 8, color: "var(--text-2)" }}>{d.anchor}</p>
         </div>
