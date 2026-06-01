@@ -400,7 +400,7 @@ export default function Page() {
         <div className="brand">
           <span className="dot" />
           <span className="name">CELESTEOS · LINKEDIN</span>
-          <span className="sub">CLAWEDBOT01</span>
+          <span className="sub">LinkedIn module · Jarvis</span>
         </div>
         <div className="status">
           <span>{state ? `${state.posts_count} posts · ${state.captures_count} captures` : "—"}</span>
@@ -423,7 +423,7 @@ export default function Page() {
           <>
             <div className="stat-grid">
               <Stat label="Posts scheduled" value={state?.posts_count ?? "—"} hint="Tracked by impression-capture agent" />
-              <Stat label="Captures logged" value={state?.captures_count ?? "—"} hint="Rows in Upstash Redis" />
+              <Stat label="Captures logged" value={state?.captures_count ?? "—"} hint="Rows in li_captures (Jarvis Supabase)" />
               <Stat label="Avg EQS" value={state?.avg_eqs ?? "—"} hint="Across all captures · per skill §18.4" />
               <Stat label="Bank entries" value={state?.bank_count ?? "—"} hint="USP × stakeholder × scenario" />
             </div>
