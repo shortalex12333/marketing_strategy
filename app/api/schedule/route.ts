@@ -23,6 +23,9 @@ export async function GET() {
           hook: d?.hook ?? "(no draft found for this scheduled slot)",
           format: r.slot_label ?? "carousel",
           rationale: d?.rationale ?? "",
+          doc_title: d?.doc_title ?? "",
+          pdf_url: d?.pdf_url ?? null,
+          storage_slug: d?.storage_slug ?? null,
         };
       }),
       checkpoints: [] as Array<{ date: string; label: string; action: string }>,

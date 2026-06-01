@@ -124,6 +124,9 @@ interface ScheduleItem {
   format: string;
   rationale: string;
   approval_status: string;
+  doc_title?: string;
+  pdf_url?: string | null;
+  storage_slug?: string | null;
 }
 
 interface Checkpoint {
@@ -906,36 +909,84 @@ export default function Page() {
                 </div>
 
                 <div className="panel">
-                  <h2>Calendar · the proposed 5 · click any row to expand</h2>
+                  <h2>Calendar · the proposed 5 · PDF visible on each row · click any row to expand the full draft</h2>
                   {schedule.calendar.map((item) => {
                     const draft = drafts?.drafts.find((d) => d.id === item.post_id);
                     const isOpen = expandedDraft === item.post_id;
+                    const slug = item.storage_slug ?? null;
+                    const thumb = slug ? `${CAROUSEL_BUCKET_URL}/${slug}/slide_01.png` : null;
+                    const pdf = item.pdf_url ?? null;
                     return (
                       <div key={item.post_id} style={{ borderBottom: "1px solid var(--border)" }}>
                         <div
-                          onClick={() => setExpandedDraft(isOpen ? null : item.post_id)}
                           style={{
                             display: "grid",
-                            gridTemplateColumns: "90px 110px 90px 130px 1fr 120px",
-                            gap: 12,
+                            gridTemplateColumns: "110px 100px 1fr 220px",
+                            gap: 14,
                             padding: "14px 4px",
-                            cursor: "pointer",
                             alignItems: "center",
                           }}
                         >
-                          <div className="mono" style={{ color: isOpen ? "var(--teal)" : "var(--text-1)" }}>
-                            {isOpen ? "▼ " : "▶ "}{item.day.slice(0, 3)}
+                          {thumb ? (
+                            <a href={thumb} target="_blank" rel="noopener noreferrer" title="Open slide 1 full size">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={thumb}
+                                alt={`Slide 1 of ${item.hook}`}
+                                style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 4, border: "1px solid var(--border)", display: "block" }}
+                              />
+                            </a>
+                          ) : (
+                            <div style={{ width: 100, height: 100, borderRadius: 4, border: "1px dashed var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-2)", fontSize: 11, textAlign: "center" }}>
+                              not yet<br/>rendered
+                            </div>
+                          )}
+                          <div>
+                            <div className="mono" style={{ color: "var(--teal)", fontSize: 12 }}>{item.day.slice(0, 3)}</div>
+                            <div className="mono small">{item.date}</div>
+                            <div className="mono small">{item.time_utc} UTC</div>
+                            <div className="mono small" style={{ color: "var(--text-2)", marginTop: 4 }}>{item.format}</div>
                           </div>
-                          <div className="mono small">{item.date}</div>
-                          <div className="mono small">{item.time_utc}</div>
-                          <div className="small">{item.format}</div>
-                          <div style={{ fontSize: 13 }}>
-                            {item.hook.length > 90 ? item.hook.slice(0, 90) + "…" : item.hook}
-                          </div>
-                          <div style={{ textAlign: "right" }}>
-                            <span className="tag" style={{ color: "var(--amber)", borderColor: "rgba(200,168,92,0.4)" }}>
+                          <div
+                            onClick={() => setExpandedDraft(isOpen ? null : item.post_id)}
+                            style={{ cursor: "pointer" }}
+                            title="Click to expand the full draft (caption, alt text, all 9 slides)"
+                          >
+                            <div style={{ fontSize: 14, lineHeight: 1.35, marginBottom: 6 }}>
+                              <span className="mono" style={{ color: isOpen ? "var(--teal)" : "var(--text-2)", marginRight: 6 }}>
+                                {isOpen ? "▼" : "▶"}
+                              </span>
+                              {item.hook}
+                            </div>
+                            {item.doc_title && (
+                              <div className="small" style={{ color: "var(--text-2)" }}>{item.doc_title}</div>
+                            )}
+                            <span className="tag" style={{ display: "inline-block", marginTop: 6, color: "var(--amber)", borderColor: "rgba(200,168,92,0.4)" }}>
                               {item.approval_status}
                             </span>
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "stretch" }}>
+                            {pdf ? (
+                              <>
+                                <a href={pdf} target="_blank" rel="noopener noreferrer">
+                                  <button style={{ width: "100%" }}>Download PDF</button>
+                                </a>
+                                <a href={pdf} target="_blank" rel="noopener noreferrer">
+                                  <button className="ghost" style={{ width: "100%" }}>View PDF</button>
+                                </a>
+                              </>
+                            ) : (
+                              <div className="small" style={{ color: "var(--text-2)", textAlign: "center", padding: "8px 0" }}>
+                                PDF not yet rendered
+                              </div>
+                            )}
+                            <button
+                              className="ghost"
+                              onClick={() => setExpandedDraft(isOpen ? null : item.post_id)}
+                              style={{ width: "100%" }}
+                            >
+                              {isOpen ? "Hide draft" : "Show full draft"}
+                            </button>
                           </div>
                         </div>
                         {isOpen && (

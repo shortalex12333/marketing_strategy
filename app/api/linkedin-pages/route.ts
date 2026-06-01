@@ -32,9 +32,14 @@ export async function GET(req: Request) {
   }
 
   try {
-    const report = await buildPageReport();
-    _cache = report as unknown as CachedReport;
-    return NextResponse.json({ ...report, _source: "live" });
+    const report = await Promise.race([
+      buildPageReport(),
+      new Promise((_, rej) =>
+        setTimeout(() => rej(new Error("LinkedIn DMA fetch timeout (25s)")), 25_000)
+      ),
+    ]);
+    _cache = report as CachedReport;
+    return NextResponse.json({ ..._cache, _source: "live" });
   } catch (e) {
     if (_cache) {
       return NextResponse.json({
@@ -43,6 +48,14 @@ export async function GET(req: Request) {
         _error: String(e),
       });
     }
-    return NextResponse.json({ error: String(e) }, { status: 502 });
+    return NextResponse.json(
+      {
+        error: String(e),
+        _source: "no cache yet",
+        _hint:
+          "LinkedIn DMA API may be rate-limited or upstream-slow. Retry in a few minutes; the next successful fetch fills the 6h cache.",
+      },
+      { status: 502 }
+    );
   }
 }
