@@ -258,6 +258,7 @@ export interface DbDraft {
   render_required: boolean;
   render_status: string;
   pdf_url: string | null;
+  storage_slug: string | null;
   created_at: string;
   updated_at: string;
 }

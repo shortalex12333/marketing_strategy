@@ -98,10 +98,14 @@ interface Draft {
   render_required: boolean;
   render_status?: string;
   pdf_url?: string;
+  storage_slug?: string;
   caption?: string;
   alt_text?: string;
   slides?: DraftSlide[];
 }
+
+const CAROUSEL_BUCKET_URL =
+  "https://verhpfznevahwxfawnwn.supabase.co/storage/v1/object/public/carousels";
 
 interface DraftsResponse {
   version: string;
@@ -997,8 +1001,8 @@ function DraftDetail({
   const [showSlides, setShowSlides] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const slug = d.pdf_url ? d.pdf_url.replace("/carousels/", "").replace(".pdf", "") : null;
-  const cardImg = slug ? `/carousels/${slug}/slide_01.png` : null;
+  const slug = d.storage_slug ?? null;
+  const cardImg = slug ? `${CAROUSEL_BUCKET_URL}/${slug}/slide_01.png` : null;
 
   const captionDirty = (d.caption || "") !== caption;
   const bodyDirty = (d.body || "") !== body;
@@ -1123,7 +1127,7 @@ function DraftDetail({
           {showSlides && d.slides && slug && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10, marginTop: 12 }}>
               {d.slides.map((s) => {
-                const imgUrl = `/carousels/${slug}/slide_${String(s.n).padStart(2, "0")}.png`;
+                const imgUrl = `${CAROUSEL_BUCKET_URL}/${slug}/slide_${String(s.n).padStart(2, "0")}.png`;
                 return (
                   <div key={s.n} style={{ background: "var(--bg-0)", border: "1px solid var(--border)", borderRadius: 6, overflow: "hidden" }}>
                     <a href={imgUrl} target="_blank" rel="noopener noreferrer">
