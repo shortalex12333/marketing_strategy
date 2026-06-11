@@ -262,17 +262,17 @@ export default function Page() {
   }, []);
 
   const loadBank = useCallback(async () => {
-    const r = await fetch("/api/bank");
+    const r = await fetch("/api/bank", { cache: "no-store" });
     if (r.ok) setBank(await r.json());
   }, []);
 
   const loadDrafts = useCallback(async () => {
-    const r = await fetch("/api/drafts");
+    const r = await fetch("/api/drafts", { cache: "no-store" });
     if (r.ok) setDrafts(await r.json());
   }, []);
 
   const loadSchedule = useCallback(async () => {
-    const r = await fetch("/api/schedule");
+    const r = await fetch("/api/schedule", { cache: "no-store" });
     if (r.ok) setSchedule(await r.json());
   }, []);
 
@@ -287,7 +287,7 @@ export default function Page() {
   }, []);
 
   const loadRoadmap = useCallback(async () => {
-    const r = await fetch("/api/roadmap");
+    const r = await fetch("/api/roadmap", { cache: "no-store" });
     if (r.ok) setRoadmap(await r.json());
   }, []);
 
@@ -662,7 +662,7 @@ export default function Page() {
             {drafts ? (
               <>
                 <div className="panel">
-                  <h2>First-5 post drafts · {drafts.version}</h2>
+                  <h2>{drafts.drafts.length} post drafts · {drafts.version}</h2>
                   <p className="small">Source: <span className="mono">{drafts.source}</span></p>
                   {drafts.fix_log && drafts.fix_log.length > 0 && (
                     <details style={{ marginTop: 10 }}>
@@ -782,7 +782,7 @@ export default function Page() {
                 </div>
 
                 <div className="panel">
-                  <h2>The 12 · click any row to expand the full storyline</h2>
+                  <h2>{roadmap.carousels.length} storylines · click any row to expand the full storyline</h2>
                   {roadmap.carousels.map((c) => {
                     const isOpen = expandedRoadmap === c.id;
                     const atmoColours = (s: string) =>
@@ -909,7 +909,7 @@ export default function Page() {
                 </div>
 
                 <div className="panel">
-                  <h2>Calendar · the proposed 5 · PDF visible on each row · click any row to expand the full draft</h2>
+                  <h2>Calendar · {schedule.calendar.length} scheduled posts · PDF visible on each row · click any row to expand the full draft</h2>
                   {schedule.calendar.map((item) => {
                     const draft = drafts?.drafts.find((d) => d.id === item.post_id);
                     const isOpen = expandedDraft === item.post_id;
