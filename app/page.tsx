@@ -313,7 +313,7 @@ export default function Page() {
     if (tab === "pages" && !pageReport) loadPages();
   }, [tab, loadAnalytics, loadBank, loadDrafts, loadSchedule, loadRoadmap, loadPages, drafts, schedule, roadmap, pageReport]);
 
-  const handleDraftSaved = (id: string, patch: { caption?: string; body?: string }) => {
+  const handleDraftSaved = (id: string, patch: { caption?: string; body?: string; approval_status?: string }) => {
     if (!drafts) return;
     setDrafts({
       ...drafts,
@@ -1043,7 +1043,7 @@ function DraftDetail({
   onToast,
 }: {
   draft: Draft;
-  onSaved: (id: string, patch: { caption?: string; body?: string }) => void;
+  onSaved: (id: string, patch: { caption?: string; body?: string; approval_status?: string }) => void;
   onToast: (msg: string, kind?: "success" | "error") => void;
 }) {
   const d = draft;
@@ -1051,6 +1051,58 @@ function DraftDetail({
   const [body, setBody] = useState(d.body || "");
   const [showSlides, setShowSlides] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Fidelity: "I posted this" — paste the live LinkedIn URL, one click marks the
+  // draft posted AND records the li_posts row (with draft_id lineage for captures).
+  const isPosted = (d.approval_status || "").toLowerCase().startsWith("posted");
+  const [postedOpen, setPostedOpen] = useState(false);
+  const [postedUrl, setPostedUrl] = useState("");
+  const [marking, setMarking] = useState(false);
+
+  const markPosted = async () => {
+    if (!postedUrl.trim()) {
+      onToast("Paste the live LinkedIn post URL first", "error");
+      return;
+    }
+    setMarking(true);
+    try {
+      const r = await fetch(`/api/drafts/${encodeURIComponent(d.id)}/posted`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: postedUrl.trim() }),
+      });
+      const j = await r.json();
+      if (r.ok) {
+        onSaved(d.id, { approval_status: j.approval_status });
+        setPostedOpen(false);
+        setPostedUrl("");
+        onToast("Marked posted — captures will track this URL.");
+      } else {
+        onToast(j.error || "Mark-posted failed", "error");
+      }
+    } catch (e) {
+      onToast("Error: " + (e as Error).message, "error");
+    } finally {
+      setMarking(false);
+    }
+  };
+
+  const undoPosted = async () => {
+    setMarking(true);
+    try {
+      const r = await fetch(`/api/drafts/${encodeURIComponent(d.id)}/posted`, { method: "DELETE" });
+      const j = await r.json();
+      if (r.ok) {
+        onSaved(d.id, { approval_status: j.approval_status });
+        onToast("Posted status undone.");
+      } else {
+        onToast(j.error || "Undo failed", "error");
+      }
+    } catch (e) {
+      onToast("Error: " + (e as Error).message, "error");
+    } finally {
+      setMarking(false);
+    }
+  };
 
   const slug = d.storage_slug ?? null;
   const cardImg = slug ? `${CAROUSEL_BUCKET_URL}/${slug}/slide_01.png` : null;
@@ -1104,10 +1156,50 @@ function DraftDetail({
             {d.posting_day_proposal} · {new Date(d.posting_time_utc).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })} UTC · {d.format}
           </div>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <span className="tag" style={{ background: "var(--bg-3)", color: "var(--amber)", borderColor: "rgba(200,168,92,0.4)" }}>
-            {d.approval_status}
+        <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+          <span
+            className="tag"
+            style={
+              isPosted
+                ? { background: "rgba(74,154,106,0.12)", color: "var(--green, #4A9A6A)", borderColor: "rgba(74,154,106,0.45)" }
+                : { background: "var(--bg-3)", color: "var(--amber)", borderColor: "rgba(200,168,92,0.4)" }
+            }
+          >
+            {isPosted ? `✓ ${d.approval_status}` : d.approval_status}
           </span>
+          {isPosted ? (
+            <button className="small" onClick={undoPosted} disabled={marking}
+              style={{ background: "none", border: "none", color: "var(--text-2)", cursor: "pointer", textDecoration: "underline" }}>
+              {marking ? "…" : "undo"}
+            </button>
+          ) : postedOpen ? (
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <input
+                value={postedUrl}
+                onChange={(e) => setPostedUrl(e.target.value)}
+                placeholder="paste live LinkedIn URL…"
+                style={{ width: 240, fontSize: 12, padding: "4px 8px", background: "var(--bg-3)",
+                         border: "1px solid var(--border, #333)", borderRadius: 4, color: "inherit" }}
+                onKeyDown={(e) => { if (e.key === "Enter") markPosted(); if (e.key === "Escape") setPostedOpen(false); }}
+                autoFocus
+              />
+              <button className="small" onClick={markPosted} disabled={marking}
+                style={{ background: "rgba(74,154,106,0.15)", border: "1px solid rgba(74,154,106,0.45)",
+                         color: "var(--green, #4A9A6A)", borderRadius: 4, padding: "4px 10px", cursor: "pointer" }}>
+                {marking ? "…" : "Confirm"}
+              </button>
+              <button className="small" onClick={() => setPostedOpen(false)} disabled={marking}
+                style={{ background: "none", border: "none", color: "var(--text-2)", cursor: "pointer" }}>
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button className="small" onClick={() => setPostedOpen(true)}
+              style={{ background: "var(--bg-3)", border: "1px solid rgba(74,154,106,0.45)",
+                       color: "var(--green, #4A9A6A)", borderRadius: 4, padding: "4px 10px", cursor: "pointer" }}>
+              Mark posted
+            </button>
+          )}
         </div>
       </div>
 

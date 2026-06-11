@@ -124,6 +124,51 @@ export async function putPost(p: ScheduledPost): Promise<void> {
   if (error) throw error;
 }
 
+/** Fidelity: the CEO posted a draft manually on LinkedIn and pastes the live URL.
+ *  ONE call does both writes so the loop stays coherent:
+ *    1. upsert li_posts WITH draft_id — the lineage that lets captures join back to
+ *       the draft's angle (the old manual flow left draft_id NULL, orphaning perf data);
+ *    2. flip li_drafts.approval_status → "posted YYYY-MM-DD" so the dashboard
+ *       shows the draft as complete.
+ *  Returns the refreshed draft. Undo = markDraftUnposted (status only — the
+ *  li_posts row + its captures are real history and are kept). */
+export async function markDraftPosted(
+  draftId: string,
+  url: string,
+  publishedAt?: string
+): Promise<DbDraft | null> {
+  const m = /activity[-:](\d+)/.exec(url);
+  const urn = m ? `urn:li:activity:${m[1]}` : null;
+  const published_at = publishedAt || new Date().toISOString();
+  const { error: postErr } = await supa().from("li_posts").upsert(
+    { id: draftId, draft_id: draftId, url, urn, published_at },
+    { onConflict: "id" }
+  );
+  if (postErr) throw postErr;
+  const stamp = `posted ${published_at.slice(0, 10)}`;
+  const { data, error } = await supa()
+    .from("li_drafts")
+    .update({ approval_status: stamp, updated_at: new Date().toISOString() })
+    .eq("id", draftId)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return (data as DbDraft) || null;
+}
+
+/** Undo a mistaken "posted" click: status back to awaiting CEO. Keeps the li_posts
+ *  row (it may already have captures; delete it explicitly via the posts tab). */
+export async function markDraftUnposted(draftId: string): Promise<DbDraft | null> {
+  const { data, error } = await supa()
+    .from("li_drafts")
+    .update({ approval_status: "awaiting CEO", updated_at: new Date().toISOString() })
+    .eq("id", draftId)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return (data as DbDraft) || null;
+}
+
 export async function deletePost(id: string): Promise<boolean> {
   const { error, count } = await supa()
     .from("li_posts")
