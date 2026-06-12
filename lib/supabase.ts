@@ -351,6 +351,57 @@ export async function patchDraft(
   return (data as DbDraft) || null;
 }
 
+// ─── Per-draft comments (li_draft_comments) ──────────────────────────
+// The founder leaves alignment notes on a SPECIFIC draft ("make the hook
+// quieter", "wrong persona", "love this — more like it"). The autopilot reads
+// these at plan time to notice patterns and tune the skills. The table is
+// created out-of-band (sql/li_draft_comments.sql); these functions degrade
+// gracefully to empty if it isn't there yet, so the dashboard never crashes
+// before the migration is applied.
+export interface DbComment {
+  id: string;
+  draft_id: string;
+  body: string;
+  author: string;
+  created_at: string;
+}
+
+export async function listComments(draftId: string): Promise<DbComment[]> {
+  const { data, error } = await supa()
+    .from("li_draft_comments")
+    .select("*")
+    .eq("draft_id", draftId)
+    .order("created_at", { ascending: true });
+  if (error) {
+    if (error.code === "42P01") return []; // table not created yet — graceful
+    throw error;
+  }
+  return (data || []) as DbComment[];
+}
+
+export async function addComment(
+  draftId: string,
+  body: string,
+  author = "founder"
+): Promise<DbComment | null> {
+  const { data, error } = await supa()
+    .from("li_draft_comments")
+    .insert({ draft_id: draftId, body, author })
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return (data as DbComment) || null;
+}
+
+export async function deleteComment(commentId: string): Promise<boolean> {
+  const { error } = await supa()
+    .from("li_draft_comments")
+    .delete()
+    .eq("id", commentId);
+  if (error) throw error;
+  return true;
+}
+
 // ─── Schedule (li_schedule) ──────────────────────────────────────────
 
 export interface DbSchedule {

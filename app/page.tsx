@@ -1058,6 +1058,58 @@ function DraftDetail({
   const [postedUrl, setPostedUrl] = useState("");
   const [marking, setMarking] = useState(false);
 
+  // Per-post comments — founder alignment notes. The autopilot reads these at
+  // plan time to notice patterns and tune the skills.
+  const [comments, setComments] = useState<
+    { id: string; body: string; author: string; created_at: string }[]
+  >([]);
+  const [newComment, setNewComment] = useState("");
+  const [commentBusy, setCommentBusy] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    fetch(`/api/drafts/${encodeURIComponent(d.id)}/comments`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { comments: [] }))
+      .then((j) => { if (live) setComments(j.comments || []); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, [d.id]);
+
+  const submitComment = async () => {
+    const text = newComment.trim();
+    if (!text) return;
+    setCommentBusy(true);
+    try {
+      const r = await fetch(`/api/drafts/${encodeURIComponent(d.id)}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: text }),
+      });
+      const j = await r.json();
+      if (r.ok && j.comment) {
+        setComments((c) => [...c, j.comment]);
+        setNewComment("");
+        onToast("Comment added — the agent reads it at plan time", "success");
+      } else {
+        onToast(j.error || "Comment failed", "error");
+      }
+    } catch {
+      onToast("Comment failed", "error");
+    } finally {
+      setCommentBusy(false);
+    }
+  };
+
+  const removeComment = async (cid: string) => {
+    setComments((c) => c.filter((x) => x.id !== cid));
+    try {
+      await fetch(
+        `/api/drafts/${encodeURIComponent(d.id)}/comments?commentId=${encodeURIComponent(cid)}`,
+        { method: "DELETE" }
+      );
+    } catch {}
+  };
+
   const markPosted = async () => {
     if (!postedUrl.trim()) {
       onToast("Paste the live LinkedIn post URL first", "error");
@@ -1322,6 +1374,37 @@ function DraftDetail({
           <p className="small" style={{ lineHeight: 1.5, padding: 14, background: "var(--bg-0)", borderRadius: 4, border: "1px solid var(--border)" }}>{d.alt_text}</p>
         </div>
       )}
+
+      <div style={{ marginBottom: 14, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
+        <h3 style={{ margin: "0 0 8px" }}>
+          Comments{" "}
+          <span className="small" style={{ color: "var(--text-2)" }}>· alignment notes the agent reads at plan time</span>
+        </h3>
+        {comments.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+            {comments.map((c) => (
+              <div key={c.id} style={{ background: "var(--bg-0)", border: "1px solid var(--border)", borderRadius: 4, padding: "8px 12px", display: "flex", justifyContent: "space-between", gap: 10 }}>
+                <div>
+                  <div className="small" style={{ lineHeight: 1.45 }}>{c.body}</div>
+                  <div className="mono" style={{ fontSize: 10, color: "var(--text-2)", marginTop: 4 }}>{c.author} · {new Date(c.created_at).toLocaleString()}</div>
+                </div>
+                <button className="ghost" style={{ alignSelf: "flex-start", fontSize: 11 }} onClick={() => removeComment(c.id)} title="Delete comment">✕</button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") submitComment(); }}
+            rows={2}
+            placeholder="Steer this post — 'hook too long', 'wrong persona', 'more like this'…  (⌘+Enter)"
+            style={{ flex: 1, fontFamily: "var(--sans)", fontSize: 13, lineHeight: 1.5, padding: 10, background: "var(--bg-0)", border: "1px solid var(--border)", color: "var(--text-0)", borderRadius: 4 }}
+          />
+          <button onClick={submitComment} disabled={commentBusy || !newComment.trim()}>{commentBusy ? "…" : "Comment"}</button>
+        </div>
+      </div>
 
       {dirty && (
         <div style={{ display: "flex", gap: 10, padding: "12px 0", borderTop: "1px solid var(--border)" }}>
