@@ -402,6 +402,51 @@ export async function deleteComment(commentId: string): Promise<boolean> {
   return true;
 }
 
+// ─── Trigger Changes (bulk revise from comments) ─────────────────────
+// A draft is "pending revision" when it has a comment newer than its last
+// update. "Trigger Changes" writes a signal the local engine polls; on the next
+// poll it bulk-revises every pending draft and re-stages it 'awaiting CEO'.
+export async function countPendingRevisions(): Promise<number> {
+  const { data: comments, error } = await supa()
+    .from("li_draft_comments")
+    .select("draft_id, created_at")
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error) {
+    if (error.code === "42P01") return 0;
+    throw error;
+  }
+  if (!comments?.length) return 0;
+  const latest = new Map<string, string>();
+  for (const c of comments as { draft_id: string; created_at: string }[]) {
+    const cur = latest.get(c.draft_id);
+    if (!cur || c.created_at > cur) latest.set(c.draft_id, c.created_at);
+  }
+  const { data: drafts } = await supa()
+    .from("li_drafts")
+    .select("id, updated_at, approval_status")
+    .in("id", [...latest.keys()]);
+  let n = 0;
+  for (const d of (drafts || []) as { id: string; updated_at: string; approval_status: string }[]) {
+    const lc = latest.get(d.id);
+    if (lc && lc > (d.updated_at || "") && !(d.approval_status || "").toLowerCase().startsWith("posted")) n++;
+  }
+  return n;
+}
+
+export async function triggerRevise(): Promise<{ requested_at: string; pending: number }> {
+  const requested_at = new Date().toISOString();
+  const { error } = await supa().storage
+    .from("carousels")
+    .upload("_signals/revise_trigger.json", JSON.stringify({ requested_at }), {
+      upsert: true,
+      contentType: "application/json",
+    });
+  if (error) throw error;
+  const pending = await countPendingRevisions();
+  return { requested_at, pending };
+}
+
 // ─── Schedule (li_schedule) ──────────────────────────────────────────
 
 export interface DbSchedule {

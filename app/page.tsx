@@ -301,6 +301,27 @@ export default function Page() {
     if (r.ok) setEngage(await r.json());
   }, []);
 
+  // "Trigger Changes" — bulk-revise every draft that has un-actioned comments.
+  const [revising, setRevising] = useState(false);
+  const triggerRevise = async () => {
+    setRevising(true);
+    try {
+      const r = await fetch("/api/trigger-revise", { method: "POST" });
+      const j = await r.json();
+      if (r.ok)
+        showToast(
+          j.pending > 0
+            ? `Trigger sent — ${j.pending} commented draft(s) will be revised within ~15 min`
+            : "No drafts have new comments yet — nothing to revise"
+        );
+      else showToast(j.error || "Trigger failed", "error");
+    } catch {
+      showToast("Trigger failed", "error");
+    } finally {
+      setRevising(false);
+    }
+  };
+
   useEffect(() => {
     loadState();
     loadPosts();
@@ -673,7 +694,12 @@ export default function Page() {
             {drafts ? (
               <>
                 <div className="panel">
-                  <h2>{drafts.drafts.length} post drafts · {drafts.version}</h2>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <h2 style={{ margin: 0 }}>{drafts.drafts.length} post drafts · {drafts.version}</h2>
+                    <button onClick={triggerRevise} disabled={revising} title="Bulk-revise every draft that has new comments — the local agent applies your feedback and re-stages them">
+                      {revising ? "Triggering…" : "⟳ Trigger Changes"}
+                    </button>
+                  </div>
                   <p className="small">Source: <span className="mono">{drafts.source}</span></p>
                   {drafts.fix_log && drafts.fix_log.length > 0 && (
                     <details style={{ marginTop: 10 }}>
