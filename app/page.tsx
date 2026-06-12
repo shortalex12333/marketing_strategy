@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   AugmentedPost,
   BankEntry,
@@ -231,6 +231,9 @@ export default function Page() {
   const [pageReport, setPageReport] = useState<PageReport | null>(null);
   const [pagesLoading, setPagesLoading] = useState(false);
   const [expandedDraft, setExpandedDraft] = useState<string | null>(null);
+  // When a calendar row's Comment/Posted button opens the draft, tell DraftDetail
+  // which action to jump to.
+  const [rowAuto, setRowAuto] = useState<"posted" | "comment" | null>(null);
   const [expandedRoadmap, setExpandedRoadmap] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; kind: "success" | "error" } | null>(null);
 
@@ -1016,17 +1019,35 @@ export default function Page() {
                             )}
                             <button
                               className="ghost"
-                              onClick={() => setExpandedDraft(isOpen ? null : item.post_id)}
+                              onClick={() => { setRowAuto(null); setExpandedDraft(isOpen ? null : item.post_id); }}
                               style={{ width: "100%" }}
                             >
                               {isOpen ? "Hide draft" : "Show full draft"}
                             </button>
+                            <button
+                              className="ghost"
+                              onClick={() => { setRowAuto("comment"); setExpandedDraft(item.post_id); }}
+                              style={{ width: "100%" }}
+                            >
+                              Comment
+                            </button>
+                            {(item.approval_status || "").toLowerCase().startsWith("posted") ? (
+                              <span className="tag" style={{ textAlign: "center", color: "var(--green)", borderColor: "rgba(74,222,128,0.4)" }}>✓ Posted</span>
+                            ) : (
+                              <button
+                                onClick={() => { setRowAuto("posted"); setExpandedDraft(item.post_id); }}
+                                style={{ width: "100%" }}
+                                title="Mark this live on LinkedIn — saves to li_posts"
+                              >
+                                Posted
+                              </button>
+                            )}
                           </div>
                         </div>
                         {isOpen && (
                           <div style={{ padding: "8px 4px 24px", background: "var(--bg-0)", borderTop: "1px solid var(--border)" }}>
                             {draft ? (
-                              <DraftDetail draft={draft} onSaved={handleDraftSaved} onToast={showToast} />
+                              <DraftDetail draft={draft} onSaved={handleDraftSaved} onToast={showToast} autoOpen={rowAuto} />
                             ) : drafts ? (
                               <p className="small empty">No draft found for {item.post_id}.</p>
                             ) : (
@@ -1075,10 +1096,12 @@ function DraftDetail({
   draft,
   onSaved,
   onToast,
+  autoOpen,
 }: {
   draft: Draft;
   onSaved: (id: string, patch: { caption?: string; body?: string; approval_status?: string }) => void;
   onToast: (msg: string, kind?: "success" | "error") => void;
+  autoOpen?: "posted" | "comment" | null;
 }) {
   const d = draft;
   const [caption, setCaption] = useState(d.caption || "");
@@ -1091,6 +1114,13 @@ function DraftDetail({
   const [postedOpen, setPostedOpen] = useState(false);
   const [postedUrl, setPostedUrl] = useState("");
   const [marking, setMarking] = useState(false);
+  // When opened from a calendar-row "Posted" / "Comment" button, jump straight
+  // to that action instead of making the founder hunt for it.
+  const commentRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (autoOpen === "posted" && !isPosted) setPostedOpen(true);
+    if (autoOpen === "comment") commentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [autoOpen, isPosted]);
 
   // Per-post comments — founder alignment notes. The autopilot reads these at
   // plan time to notice patterns and tune the skills.
@@ -1409,7 +1439,7 @@ function DraftDetail({
         </div>
       )}
 
-      <div style={{ marginBottom: 14, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
+      <div ref={commentRef} style={{ marginBottom: 14, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
         <h3 style={{ margin: "0 0 8px" }}>
           Comments{" "}
           <span className="small" style={{ color: "var(--text-2)" }}>· alignment notes the agent reads at plan time</span>
