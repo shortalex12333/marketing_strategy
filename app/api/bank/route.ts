@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { loadBank } from "@/lib/bank";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const entries = await loadBank();

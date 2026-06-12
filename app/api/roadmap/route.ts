@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { listDrafts } from "@/lib/supabase";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 /**
  * The roadmap view is reconstructed from li_drafts (which carries the slides
