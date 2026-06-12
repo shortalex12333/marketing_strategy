@@ -7,7 +7,8 @@ import type {
   CaptureRow,
 } from "@/lib/types";
 
-type Tab = "dashboard" | "schedule" | "roadmap" | "pages" | "posts" | "analytics" | "bank" | "briefs" | "drafts";
+type Tab = "dashboard" | "schedule" | "roadmap" | "pages" | "posts" | "analytics" | "bank" | "briefs" | "drafts" | "engage";
+type EngageData = { categories: { theme: string; use_when: string; lines: string[] }[] };
 
 interface PageReport {
   fetched_at: string;
@@ -291,6 +292,12 @@ export default function Page() {
     if (r.ok) setRoadmap(await r.json());
   }, []);
 
+  const [engage, setEngage] = useState<EngageData | null>(null);
+  const loadEngage = useCallback(async () => {
+    const r = await fetch("/api/engagement-comments", { cache: "no-store" });
+    if (r.ok) setEngage(await r.json());
+  }, []);
+
   useEffect(() => {
     loadState();
     loadPosts();
@@ -311,7 +318,8 @@ export default function Page() {
     }
     if (tab === "roadmap" && !roadmap) loadRoadmap();
     if (tab === "pages" && !pageReport) loadPages();
-  }, [tab, loadAnalytics, loadBank, loadDrafts, loadSchedule, loadRoadmap, loadPages, drafts, schedule, roadmap, pageReport]);
+    if (tab === "engage" && !engage) loadEngage();
+  }, [tab, loadAnalytics, loadBank, loadDrafts, loadSchedule, loadRoadmap, loadPages, loadEngage, drafts, schedule, roadmap, pageReport, engage]);
 
   const handleDraftSaved = (id: string, patch: { caption?: string; body?: string; approval_status?: string }) => {
     if (!drafts) return;
@@ -418,7 +426,7 @@ export default function Page() {
       </header>
 
       <nav className="tabs">
-        {(["dashboard", "schedule", "roadmap", "pages", "posts", "analytics", "bank", "briefs", "drafts"] as Tab[]).map((t) => (
+        {(["dashboard", "schedule", "roadmap", "pages", "posts", "analytics", "bank", "briefs", "drafts", "engage"] as Tab[]).map((t) => (
           <button key={t} className={`tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -894,6 +902,32 @@ export default function Page() {
               <div className="panel"><div className="empty">Loading roadmap…</div></div>
             )}
           </>
+        )}
+
+        {tab === "engage" && (
+          <div className="panel">
+            <h2>Engagement comments · paste on others&apos; posts to build awareness</h2>
+            <p className="small" style={{ color: "var(--text-2)", marginBottom: 14 }}>
+              On-brand lines for genuine engagement on maritime / PMS posts. Observational, never
+              salesy, never names CelesteOS — the comment earns the profile click. Copy, then tailor a
+              word if the post needs it.
+            </p>
+            {!engage && <p className="small">Loading…</p>}
+            {engage?.categories.map((cat, ci) => (
+              <div key={ci} style={{ marginBottom: 18 }}>
+                <h3 style={{ margin: "0 0 2px" }}>{cat.theme}</h3>
+                <div className="mono small" style={{ color: "var(--text-2)", marginBottom: 8 }}>{cat.use_when}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {cat.lines.map((line, li) => (
+                    <div key={li} style={{ display: "flex", gap: 8, alignItems: "flex-start", background: "var(--bg-0)", border: "1px solid var(--border)", borderRadius: 4, padding: "10px 12px" }}>
+                      <div className="small" style={{ flex: 1, lineHeight: 1.5 }}>{line}</div>
+                      <button className="ghost" style={{ flexShrink: 0 }} onClick={() => { navigator.clipboard.writeText(line).then(() => showToast("Copied — paste on the post")); }}>Copy</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
         {tab === "schedule" && (

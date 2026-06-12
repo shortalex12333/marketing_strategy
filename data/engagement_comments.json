@@ -1,0 +1,77 @@
+{
+  "_note": "On-brand comment lines to paste on OTHER people's maritime/PMS/yacht posts — awareness through genuine engagement. Voice: observational, restraint, ex-ETO lived authority. NEVER salesy, never names CelesteOS, never cliché ('Great post!'), no emoji, no banned words. The comment earns the profile click; it never pitches. Edit freely — the agent reads this file.",
+  "categories": [
+    {
+      "theme": "Crew rotation · handover · knowledge loss",
+      "use_when": "Someone posts about engineers rotating off, losing experienced crew, or the handover process",
+      "lines": [
+        "The part that never makes the handover doc is the why — why that valve, why that supplier, why that workaround that's kept a generator running for years. That leaves with the person, not the paperwork.",
+        "Every rotation I did as an ETO, the first week was just rebuilding what the last team already knew. The boat had the answers; they just weren't findable.",
+        "The handover is the lowest-priority task on the busiest day of a rotation. That's not a discipline problem — it's a structural one."
+      ]
+    },
+    {
+      "theme": "Maintenance records · PMS · documentation",
+      "use_when": "Posts about planned maintenance systems, record-keeping, or documentation standards",
+      "lines": [
+        "The record almost always exists. Finding it — and trusting it was written at the time, not reconstructed after — is the actual work.",
+        "A maintenance system shows the tasks. The reasoning, the half-resolved threads, the numbers — that usually lives somewhere the system can't see.",
+        "Most of the operational truth on a vessel isn't in the PMS. It's in an inbox, a notebook, and one engineer's memory."
+      ]
+    },
+    {
+      "theme": "Searchability · finding information",
+      "use_when": "Posts about data buried in email, can't find old reports, information scattered across systems",
+      "lines": [
+        "Finding the right record was never the hard part. Knowing it existed, and where, was.",
+        "The inbox tends to hold more of the real operational history than the system does — it's just the one place you can't properly search.",
+        "One email thread can carry three quotes, but the subject line names one. The other two aren't lost — they're just unfindable."
+      ]
+    },
+    {
+      "theme": "Going paperless · digitalisation",
+      "use_when": "Posts about going paperless, digital transformation, moving off spreadsheets/Word",
+      "lines": [
+        "Paperless only helps if you can find the page. A PDF you can't search is a filing cabinet with extra steps.",
+        "Digitising the document isn't the win. Making the thing inside it reachable from anywhere on the vessel is.",
+        "Going digital tends to move the mess, not remove it — unless the records actually connect to each other."
+      ]
+    },
+    {
+      "theme": "Crew adoption · new systems · training",
+      "use_when": "Posts about software adoption, crew not using tools, change management onboard",
+      "lines": [
+        "A system fails the day the second engineer stops opening it. The most capable software loses to the one people actually use.",
+        "Adoption isn't a training problem. If a tool costs more effort than the notebook it replaces, the notebook wins — every time.",
+        "The quiet test of any onboard system: does it survive a crew change without anyone being told to keep it going."
+      ]
+    },
+    {
+      "theme": "Survey · audit · compliance · proof",
+      "use_when": "Posts about surveys, audits, class, insurance claims, proving what was done",
+      "lines": [
+        "A surveyor doesn't want the story. They want the record — written at the time, by the person who did the work.",
+        "The strongest defence in an audit isn't a tidy report. It's a trail that was never reconstructed after the fact.",
+        "When the insurer asks what was done on a job from eight months ago, the answer is only as good as where that proof actually lives."
+      ]
+    },
+    {
+      "theme": "AI / technology in maritime (scepticism welcome)",
+      "use_when": "Posts hyping or doubting AI/tech in shipping; respond to the doubt honestly, never hype",
+      "lines": [
+        "Fair to be sceptical of 'AI' on a boat. The useful question isn't whether it's clever — it's whether it finds what you meant when you're tired and the alarm's going.",
+        "Most maritime tech fails the same test: it's impressive in a demo and invisible at 3am when something's actually broken.",
+        "The bar isn't intelligence. It's whether the thing reduces the effort of the worst job on the worst day."
+      ]
+    },
+    {
+      "theme": "Founder credibility · lived experience",
+      "use_when": "Personal/reflective posts where a grounded ex-ETO perspective fits naturally",
+      "lines": [
+        "Spent years as an ETO opening a different handover format every rotation. The tools changed; the problem didn't.",
+        "I've stood in front of an owner pointing at the wrong file, and diagnosed the same fault twice on the same vessel. Neither was a knowledge problem — both were a findability one.",
+        "The people who run these boats aren't short on information. They're short on a way to reach the right piece of it at the right moment."
+      ]
+    }
+  ]
+}
