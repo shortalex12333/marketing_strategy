@@ -352,13 +352,17 @@ export default function Page() {
   }, [tab, loadAnalytics, loadBank, loadDrafts, loadSchedule, loadRoadmap, loadPages, loadEngage, drafts, schedule, roadmap, pageReport, engage]);
 
   const handleDraftSaved = (id: string, patch: { caption?: string; body?: string; approval_status?: string }) => {
-    if (!drafts) return;
-    setDrafts({
-      ...drafts,
-      drafts: drafts.drafts.map((d) =>
-        d.id === id ? { ...d, ...patch } : d
-      ),
-    });
+    setDrafts((prev) =>
+      prev ? { ...prev, drafts: prev.drafts.map((d) => (d.id === id ? { ...d, ...patch } : d)) } : prev
+    );
+    // When a post is marked posted, mirror the status onto the schedule item so it
+    // drops out of "left to post" immediately, and collapse the row.
+    if (patch.approval_status) {
+      setSchedule((s) =>
+        s ? { ...s, calendar: s.calendar.map((c) => (c.post_id === id ? { ...c, approval_status: patch.approval_status! } : c)) } : s
+      );
+      setExpandedDraft((cur) => (cur === id ? null : cur));
+    }
   };
 
   const submitPost = async () => {
