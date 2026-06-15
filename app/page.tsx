@@ -231,6 +231,12 @@ export default function Page() {
   const [pageReport, setPageReport] = useState<PageReport | null>(null);
   const [pagesLoading, setPagesLoading] = useState(false);
   const [expandedDraft, setExpandedDraft] = useState<string | null>(null);
+  // Schedule view: hide DONE (posted / superseded) by default — only show what's left to post.
+  const [showPosted, setShowPosted] = useState(false);
+  const scheduleRemaining = (schedule?.calendar ?? []).filter((i) => {
+    const a = (i.approval_status || "").toLowerCase();
+    return !a.startsWith("posted") && !a.startsWith("superseded");
+  });
   // When a calendar row's Comment/Posted button opens the draft, tell DraftDetail
   // which action to jump to.
   const [rowAuto, setRowAuto] = useState<"posted" | "comment" | null>(null);
@@ -972,8 +978,15 @@ export default function Page() {
                 </div>
 
                 <div className="panel">
-                  <h2>Calendar · {schedule.calendar.length} scheduled posts · PDF visible on each row · click any row to expand the full draft</h2>
-                  {schedule.calendar.map((item) => {
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <h2 style={{ margin: 0 }}>Calendar · {scheduleRemaining.length} left to post</h2>
+                    {schedule.calendar.length > scheduleRemaining.length && (
+                      <button className="ghost" onClick={() => setShowPosted(!showPosted)}>
+                        {showPosted ? "Hide done" : `Show ${schedule.calendar.length - scheduleRemaining.length} done`}
+                      </button>
+                    )}
+                  </div>
+                  {(showPosted ? schedule.calendar : scheduleRemaining).map((item) => {
                     const draft = drafts?.drafts.find((d) => d.id === item.post_id);
                     const isOpen = expandedDraft === item.post_id;
                     const slug = item.storage_slug ?? null;
