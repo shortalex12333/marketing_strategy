@@ -3,10 +3,9 @@ import { listDrafts } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
-// li_drafts has no `format` column — derive it so the reviewer sees the post
-// type + the right preview. A rendered carousel always carries a pdf_url;
-// otherwise the type lives in usp ("[poll]" / "[image-text-branded]") or
-// slides[0].type. Defaults to carousel for untagged legacy rows.
+// Prefer the real `format` column (added 2026-06-24 with the auto-poster). For
+// legacy rows without it, derive from pdf_url / usp tag / slides[0].type so the
+// reviewer still sees the right post type. Defaults to carousel.
 function deriveFormat(row: {
   pdf_url?: string | null;
   usp?: string | null;
@@ -32,7 +31,10 @@ export async function GET() {
     return NextResponse.json({
       version: "supabase-jarvis-2026-05-29",
       source: "li_drafts (Jarvis Supabase project)",
-      drafts: rows.map((r) => ({ ...r, format: deriveFormat(r) })),
+      drafts: rows.map((r) => ({
+        ...r,
+        format: (r as { format?: string | null }).format || deriveFormat(r),
+      })),
     });
   } catch (e) {
     return NextResponse.json(
