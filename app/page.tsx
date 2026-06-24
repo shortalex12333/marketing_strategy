@@ -103,6 +103,8 @@ interface Draft {
   caption?: string;
   alt_text?: string;
   slides?: DraftSlide[];
+  poll?: { question?: string; options?: string[] } | null;
+  description?: string;
 }
 
 const CAROUSEL_BUCKET_URL =
@@ -1263,6 +1265,30 @@ function DraftDetail({
     }
   };
 
+  // Approve — the CEO greenlights a draft for publishing (status → "approved").
+  const isApproved = (d.approval_status || "").toLowerCase() === "approved";
+  const [approving, setApproving] = useState(false);
+  const approve = async () => {
+    setApproving(true);
+    try {
+      const r = await fetch(`/api/drafts/${encodeURIComponent(d.id)}/approve`, { method: "POST" });
+      const j = await r.json();
+      if (r.ok) { onSaved(d.id, { approval_status: j.approval_status }); onToast("Approved — queued to publish."); }
+      else onToast(j.error || "Approve failed", "error");
+    } catch (e) { onToast("Error: " + (e as Error).message, "error"); }
+    finally { setApproving(false); }
+  };
+  const unapprove = async () => {
+    setApproving(true);
+    try {
+      const r = await fetch(`/api/drafts/${encodeURIComponent(d.id)}/approve`, { method: "DELETE" });
+      const j = await r.json();
+      if (r.ok) { onSaved(d.id, { approval_status: j.approval_status }); onToast("Approval removed."); }
+      else onToast(j.error || "Unapprove failed", "error");
+    } catch (e) { onToast("Error: " + (e as Error).message, "error"); }
+    finally { setApproving(false); }
+  };
+
   const slug = d.storage_slug ?? null;
   const cardImg = slug ? `${CAROUSEL_BUCKET_URL}/${slug}/slide_01.png` : null;
 
@@ -1362,6 +1388,26 @@ function DraftDetail({
         </div>
       </div>
 
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
+        {isApproved ? (
+          <>
+            <span className="tag" style={{ background: "rgba(74,154,106,0.12)", color: "var(--green,#4A9A6A)", borderColor: "rgba(74,154,106,0.45)" }}>✓ approved</span>
+            <button className="ghost" onClick={unapprove} disabled={approving}>{approving ? "…" : "Unapprove"}</button>
+          </>
+        ) : (
+          <button onClick={approve} disabled={approving}
+            style={{ background: "rgba(74,154,106,0.15)", border: "1px solid rgba(74,154,106,0.45)", color: "var(--green,#4A9A6A)", borderRadius: 4, padding: "6px 14px", cursor: "pointer", fontWeight: 600 }}>
+            {approving ? "Approving…" : "✓ Approve"}
+          </button>
+        )}
+        <a href={`/api/drafts/${encodeURIComponent(d.id)}/download?fmt=md`}>
+          <button className="ghost">Download .md</button>
+        </a>
+        <a href={`/api/drafts/${encodeURIComponent(d.id)}/download?fmt=print`} target="_blank" rel="noopener noreferrer">
+          <button className="ghost">Print / PDF</button>
+        </a>
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 14 }}>
         <div>
           <h3>Rationale</h3>
@@ -1444,6 +1490,43 @@ function DraftDetail({
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {d.slides && d.slides.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <h3 style={{ margin: "0 0 8px" }}>Slide copy · {d.slides.length} slides</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {d.slides.map((s) => (
+              <div key={s.n} style={{ background: "var(--bg-0)", border: "1px solid var(--border)", borderRadius: 4, padding: "8px 12px" }}>
+                <div className="mono" style={{ fontSize: 10, color: "var(--text-2)" }}>Slide {s.n}</div>
+                {s.h && <div style={{ fontWeight: 600, fontSize: 13 }}>{s.h}</div>}
+                {s.b && <div className="small" style={{ marginTop: 2 }}>{s.b}</div>}
+                {s.q && <div className="small" style={{ fontStyle: "italic" }}>{s.q}</div>}
+                {s.c && <div className="small">{s.c}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {d.format === "poll" && d.poll && (d.poll.question || (d.poll.options && d.poll.options.length > 0)) && (
+        <div style={{ marginBottom: 14 }}>
+          <h3 style={{ margin: "0 0 8px" }}>Poll</h3>
+          {d.poll.question && <p style={{ fontWeight: 600, margin: "0 0 6px" }}>{d.poll.question}</p>}
+          <ul className="small" style={{ margin: 0, paddingLeft: 18 }}>
+            {(d.poll.options || []).map((o, i) => <li key={i}>{o}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {d.description && d.format.includes("video") && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <h3 style={{ margin: 0 }}>Video script</h3>
+            <button className="ghost" onClick={() => copy(d.description!, "Script")}>Copy</button>
+          </div>
+          <p className="small" style={{ lineHeight: 1.5, padding: 14, background: "var(--bg-0)", borderRadius: 4, border: "1px solid var(--border)", whiteSpace: "pre-wrap" }}>{d.description}</p>
         </div>
       )}
 

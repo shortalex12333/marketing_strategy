@@ -306,6 +306,11 @@ export interface DbDraft {
   storage_slug: string | null;
   created_at: string;
   updated_at: string;
+  format?: string | null;
+  poll?: unknown;
+  posted_at?: string | null;
+  li_activity_urn?: string | null;
+  post_error?: string | null;
 }
 
 export async function listDrafts(): Promise<DbDraft[]> {
@@ -344,6 +349,32 @@ export async function patchDraft(
   const { data, error } = await supa()
     .from("li_drafts")
     .update(update)
+    .eq("id", id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return (data as DbDraft) || null;
+}
+
+/** CEO approves a draft for publishing → approval_status = "approved".
+ *  The manual publisher (a Claude Code session) picks up "approved" drafts on
+ *  command, posts to the company page, and writes li_posts. Reversible. */
+export async function approveDraft(id: string): Promise<DbDraft | null> {
+  const { data, error } = await supa()
+    .from("li_drafts")
+    .update({ approval_status: "approved", updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return (data as DbDraft) || null;
+}
+
+/** Undo approval — status back to "awaiting CEO". */
+export async function unapproveDraft(id: string): Promise<DbDraft | null> {
+  const { data, error } = await supa()
+    .from("li_drafts")
+    .update({ approval_status: "awaiting CEO", updated_at: new Date().toISOString() })
     .eq("id", id)
     .select()
     .maybeSingle();
