@@ -367,6 +367,22 @@ export default function Page() {
     }
   };
 
+  // Approve straight from a schedule row (no need to open the draft).
+  const approveScheduled = async (postId: string) => {
+    try {
+      const r = await fetch(`/api/drafts/${encodeURIComponent(postId)}/approve`, { method: "POST" });
+      const j = await r.json();
+      if (r.ok) {
+        handleDraftSaved(postId, { approval_status: j.approval_status });
+        showToast("Approved — queued to publish.");
+      } else {
+        showToast(j.error || "Approve failed", "error");
+      }
+    } catch (e) {
+      showToast("Error: " + (e as Error).message, "error");
+    }
+  };
+
   const submitPost = async () => {
     if (!url.trim()) {
       showToast("URL required", "error");
@@ -1076,6 +1092,21 @@ export default function Page() {
                             >
                               Comment
                             </button>
+                            {(() => {
+                              const st = (item.approval_status || "").toLowerCase();
+                              if (st.startsWith("posted")) return null;
+                              if (st === "approved")
+                                return <span className="tag" style={{ textAlign: "center", color: "var(--green)", borderColor: "rgba(74,154,106,0.45)" }}>✓ Approved</span>;
+                              return (
+                                <button
+                                  onClick={() => approveScheduled(item.post_id)}
+                                  style={{ width: "100%", background: "rgba(74,154,106,0.15)", border: "1px solid rgba(74,154,106,0.45)", color: "var(--green, #4A9A6A)" }}
+                                  title="Approve this post — queues it for publishing"
+                                >
+                                  ✓ Approve
+                                </button>
+                              );
+                            })()}
                             {(item.approval_status || "").toLowerCase().startsWith("posted") ? (
                               <span className="tag" style={{ textAlign: "center", color: "var(--green)", borderColor: "rgba(74,222,128,0.4)" }}>✓ Posted</span>
                             ) : (
