@@ -382,6 +382,18 @@ export async function unapproveDraft(id: string): Promise<DbDraft | null> {
   return (data as DbDraft) || null;
 }
 
+/** CEO denies a draft — approval_status = "denied" (drops out of the publish queue). */
+export async function denyDraft(id: string): Promise<DbDraft | null> {
+  const { data, error } = await supa()
+    .from("li_drafts")
+    .update({ approval_status: "denied", updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return (data as DbDraft) || null;
+}
+
 // ─── Per-draft comments (li_draft_comments) ──────────────────────────
 // The founder leaves alignment notes on a SPECIFIC draft ("make the hook
 // quieter", "wrong persona", "love this — more like it"). The autopilot reads

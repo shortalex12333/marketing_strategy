@@ -7,7 +7,7 @@ import type {
   CaptureRow,
 } from "@/lib/types";
 
-type Tab = "dashboard" | "schedule" | "roadmap" | "pages" | "posts" | "analytics" | "bank" | "briefs" | "drafts" | "engage";
+type Tab = "board" | "dashboard" | "schedule" | "roadmap" | "pages" | "posts" | "analytics" | "bank" | "briefs" | "drafts" | "engage";
 type EngageData = { categories: { theme: string; use_when: string; lines: string[] }[] };
 
 interface PageReport {
@@ -218,7 +218,7 @@ function CapturePills({
 }
 
 export default function Page() {
-  const [tab, setTab] = useState<Tab>("dashboard");
+  const [tab, setTab] = useState<Tab>("board");
   const [state, setState] = useState<AppState | null>(null);
   const [posts, setPosts] = useState<AugmentedPost[]>([]);
   const [analytics, setAnalytics] = useState<(CaptureRow & { eqs: number | null })[]>([]);
@@ -344,7 +344,7 @@ export default function Page() {
     if (tab === "analytics") loadAnalytics();
     if (tab === "bank") loadBank();
     if (tab === "drafts" && !drafts) loadDrafts();
-    if (tab === "schedule") {
+    if (tab === "schedule" || tab === "board") {
       if (!schedule) loadSchedule();
       if (!drafts) loadDrafts();
     }
@@ -377,6 +377,22 @@ export default function Page() {
         showToast("Approved — queued to publish.");
       } else {
         showToast(j.error || "Approve failed", "error");
+      }
+    } catch (e) {
+      showToast("Error: " + (e as Error).message, "error");
+    }
+  };
+
+  // Deny straight from the board / a row.
+  const denyScheduled = async (postId: string) => {
+    try {
+      const r = await fetch(`/api/drafts/${encodeURIComponent(postId)}/approve?decision=deny`, { method: "POST" });
+      const j = await r.json();
+      if (r.ok) {
+        handleDraftSaved(postId, { approval_status: j.approval_status });
+        showToast("Denied.");
+      } else {
+        showToast(j.error || "Deny failed", "error");
       }
     } catch (e) {
       showToast("Error: " + (e as Error).message, "error");
@@ -478,7 +494,7 @@ export default function Page() {
       </header>
 
       <nav className="tabs">
-        {(["dashboard", "schedule", "roadmap", "pages", "posts", "analytics", "bank", "briefs", "drafts", "engage"] as Tab[]).map((t) => (
+        {(["board", "dashboard", "schedule", "roadmap", "pages", "posts", "analytics", "bank", "briefs", "drafts", "engage"] as Tab[]).map((t) => (
           <button key={t} className={`tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -486,6 +502,19 @@ export default function Page() {
       </nav>
 
       <main>
+        {tab === "board" && (
+          schedule ? (
+            <Board
+              items={schedule.calendar}
+              onApprove={approveScheduled}
+              onDeny={denyScheduled}
+              onOpen={(id) => { setRowAuto(null); setTab("schedule"); setExpandedDraft(id); }}
+            />
+          ) : (
+            <div className="panel"><div className="empty">Loading board…</div></div>
+          )
+        )}
+
         {tab === "dashboard" && (
           <>
             <div className="stat-grid">
@@ -1164,6 +1193,114 @@ function Stat({ label, value, hint }: { label: string; value: string | number; h
       <div className="label">{label}</div>
       <div className="value">{value}</div>
       <div className="hint">{hint}</div>
+    </div>
+  );
+}
+
+const BOARD_FORMAT: Record<string, { label: string; color: string }> = {
+  "carousel": { label: "Carousel", color: "#5AABCC" },
+  "text-provocation": { label: "Text", color: "#C8A85C" },
+  "image-text-component": { label: "Image", color: "#6FBF8B" },
+  "image-text-branded": { label: "Image", color: "#6FBF8B" },
+  "poll": { label: "Poll", color: "#B58CDA" },
+  "founder-video-short": { label: "Video", color: "#7AA7E0" },
+  "founder-video-long": { label: "Video", color: "#7AA7E0" },
+};
+const BOARD_WEIGHT: Record<string, { label: string; color: string }> = {
+  painkiller: { label: "Painkiller", color: "#E0635F" },
+  objection: { label: "Objection", color: "#C8A85C" },
+  vitamin: { label: "Vitamin", color: "#6FBF8B" },
+};
+
+/** Simple scannable content board: one colour-coded tile per scheduled post,
+ *  with media thumbnail, the angle, time-of-day, and Approve / Deny. */
+function Board({
+  items, onApprove, onDeny, onOpen,
+}: {
+  items: ScheduleItem[];
+  onApprove: (id: string) => void;
+  onDeny: (id: string) => void;
+  onOpen: (id: string) => void;
+}) {
+  const sorted = [...items].sort((a, b) => (a.date + a.time_utc).localeCompare(b.date + b.time_utc));
+  const counts = { approved: 0, denied: 0, posted: 0, pending: 0 };
+  for (const it of sorted) {
+    const s = (it.approval_status || "").toLowerCase();
+    if (s.startsWith("posted")) counts.posted++;
+    else if (s === "approved") counts.approved++;
+    else if (s === "denied") counts.denied++;
+    else counts.pending++;
+  }
+  return (
+    <div className="panel">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+        <h2 style={{ margin: 0 }}>Content board · {sorted.length} posts</h2>
+        <div className="mono small" style={{ color: "var(--text-2)" }}>
+          {counts.pending} pending · <span style={{ color: "var(--green)" }}>{counts.approved} approved</span> · <span style={{ color: "#E0635F" }}>{counts.denied} denied</span> · {counts.posted} posted
+        </div>
+      </div>
+      <p className="small" style={{ color: "var(--text-2)" }}>
+        Colour bar = post type. Coloured dot = the angle (painkiller / objection / vitamin). Scan, then Approve or Deny each post.
+      </p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(225px, 1fr))", gap: 12, marginTop: 14 }}>
+        {sorted.map((it) => {
+          const fmt = BOARD_FORMAT[it.format] || { label: it.format, color: "var(--text-2)" };
+          const parts = (it.rationale || "").split(" · ");
+          const weight = (parts[0] || "").trim().toLowerCase();
+          const chapter = (parts[1] || "").trim();
+          const w = BOARD_WEIGHT[weight] || { label: weight || "—", color: "var(--text-2)" };
+          const st = (it.approval_status || "").toLowerCase();
+          const approved = st === "approved", denied = st === "denied", posted = st.startsWith("posted");
+          const thumb = it.storage_slug ? `${CAROUSEL_BUCKET_URL}/${it.storage_slug}/slide_01.png` : null;
+          const dt = new Date(it.date + "T00:00:00");
+          const dayLabel = isNaN(dt.getTime()) ? it.date : dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+          return (
+            <div key={it.post_id} style={{
+              border: "1px solid var(--border)", borderTop: `3px solid ${fmt.color}`, borderRadius: 8,
+              overflow: "hidden", background: "var(--bg-1)", opacity: denied ? 0.55 : 1,
+            }}>
+              <div onClick={() => onOpen(it.post_id)} title="Open full draft" style={{
+                cursor: "pointer", height: 118, background: thumb ? "#0a0a0a" : `${fmt.color}1f`,
+                display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
+              }}>
+                {thumb ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={thumb} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <span className="mono" style={{ color: fmt.color, fontSize: 13, letterSpacing: 1 }}>{fmt.label.toUpperCase()}</span>
+                )}
+                <span className="mono" style={{ position: "absolute", top: 6, left: 6, fontSize: 10, background: "rgba(0,0,0,0.6)", color: fmt.color, padding: "2px 7px", borderRadius: 4 }}>{fmt.label}</span>
+              </div>
+              <div style={{ padding: "9px 11px" }}>
+                <div className="mono" style={{ fontSize: 10, color: "var(--text-2)" }}>{dayLabel} · {(it.time_utc || "").slice(0, 5)}</div>
+                <div style={{ fontSize: 12.5, lineHeight: 1.35, margin: "5px 0 9px", height: 51, overflow: "hidden" }}>{it.hook}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 9 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: w.color, flexShrink: 0 }} />
+                  <span className="mono" style={{ fontSize: 10, color: "var(--text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {w.label}{chapter ? ` · ${chapter}` : ""}
+                  </span>
+                </div>
+                {posted ? (
+                  <span className="tag" style={{ color: "var(--green)", borderColor: "rgba(74,154,106,0.45)" }}>✓ Posted</span>
+                ) : (
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => onApprove(it.post_id)} disabled={approved} style={{
+                      flex: 1, padding: "6px 0", fontSize: 12, borderRadius: 5,
+                      background: approved ? "rgba(74,154,106,0.3)" : "rgba(74,154,106,0.12)",
+                      border: "1px solid rgba(74,154,106,0.45)", color: "var(--green)", cursor: approved ? "default" : "pointer",
+                    }}>{approved ? "✓ Approved" : "Approve"}</button>
+                    <button onClick={() => onDeny(it.post_id)} disabled={denied} style={{
+                      flex: 1, padding: "6px 0", fontSize: 12, borderRadius: 5,
+                      background: denied ? "rgba(224,99,95,0.3)" : "rgba(224,99,95,0.10)",
+                      border: "1px solid rgba(224,99,95,0.4)", color: "#E0635F", cursor: denied ? "default" : "pointer",
+                    }}>{denied ? "✗ Denied" : "Deny"}</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
