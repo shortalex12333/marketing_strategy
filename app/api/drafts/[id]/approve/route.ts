@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { approveDraft, unapproveDraft } from "@/lib/supabase";
+import { approveDraft, unapproveDraft, denyDraft } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -10,14 +10,15 @@ interface Ctx {
 /** POST /api/drafts/:id/approve — the CEO approves a draft for publishing.
  *  Sets approval_status = "approved" (the manual publisher picks these up on
  *  command). Reversible via DELETE. */
-export async function POST(_req: Request, { params }: Ctx) {
+export async function POST(req: Request, { params }: Ctx) {
   const { id } = await params;
+  const decision = new URL(req.url).searchParams.get("decision");
   try {
-    const draft = await approveDraft(id);
+    const draft = decision === "deny" ? await denyDraft(id) : await approveDraft(id);
     if (!draft) return NextResponse.json({ error: "draft not found" }, { status: 404 });
     return NextResponse.json({ ok: true, id, approval_status: draft.approval_status });
   } catch (e) {
-    return NextResponse.json({ error: "approve failed", detail: String(e) }, { status: 500 });
+    return NextResponse.json({ error: "decision failed", detail: String(e) }, { status: 500 });
   }
 }
 
