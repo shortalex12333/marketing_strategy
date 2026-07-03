@@ -546,3 +546,83 @@ export async function listBank(): Promise<BankEntry[]> {
     };
   });
 }
+
+// ─── Format inference (shared) ────────────────────────────────────────
+
+// Prefer the real `format` column (added 2026-06-24 with the auto-poster). For
+// legacy rows without it, derive from pdf_url / usp tag / slides[0].type so the
+// reviewer still sees the right post type. Defaults to carousel.
+export function deriveFormat(row: {
+  pdf_url?: string | null;
+  usp?: string | null;
+  slides?: unknown;
+}): string {
+  if (row.pdf_url) return "carousel";
+  const m = (row.usp || "").match(/^\s*\[([^\]]+)\]/);
+  const slides = Array.isArray(row.slides)
+    ? (row.slides as Array<Record<string, unknown>>)
+    : [];
+  const s0 = slides[0] || {};
+  const raw = String((m && m[1]) || s0.type || s0.t || "").toLowerCase();
+  if (raw.includes("poll")) return "poll";
+  if (raw.includes("video")) return "video";
+  if (raw.includes("image") || raw.includes("component") || raw.includes("branded"))
+    return "image";
+  return "carousel";
+}
+
+// ─── Schedule assignment on approve ───────────────────────────────────
+
+// A rotating time-of-day set, matching the spread already used across the
+// live 100-day cycle (avoids every post landing at the same hour).
+const SLOT_TIMES = ["08:30:00", "12:10:00", "17:40:00", "07:25:00", "13:50:00", "16:20:00", "09:05:00"];
+
+/** Assigns (or reassigns) the next open li_schedule slot for a draft that was
+ *  just approved — so approving a draft never implies "post it now," and the
+ *  Schedule tab always shows a real upcoming date instead of whatever stale
+ *  date the slot was originally seeded with weeks earlier.
+ *
+ *  Rule: next open day after the latest already-scheduled date, skipping an
+ *  extra day if that would put the same coarse format back-to-back with the
+ *  immediately preceding slot (mirrors MATRIX.md's "no same format/execution
+ *  twice in a row" variety rule). Reuses the draft's existing li_schedule row
+ *  (by post_id) if one exists — updates its date rather than creating a
+ *  duplicate; otherwise inserts a new row.
+ */
+export async function scheduleNextAvailableSlot(draftId: string, format: string): Promise<void> {
+  const { data: rows, error } = await supa()
+    .from("li_schedule")
+    .select("post_id,date,slot_label")
+    .order("date", { ascending: false })
+    .limit(20);
+  if (error) throw error;
+  const latest = (rows || []).find((r) => r.post_id !== draftId);
+  const today = new Date().toISOString().slice(0, 10);
+  const base = latest?.date && latest.date > today ? latest.date : today;
+  const next = new Date(base + "T00:00:00Z");
+  next.setUTCDate(next.getUTCDate() + 1);
+  if (latest?.slot_label && latest.slot_label === format) {
+    next.setUTCDate(next.getUTCDate() + 1);
+  }
+  const nextDate = next.toISOString().slice(0, 10);
+  const time = SLOT_TIMES[(rows || []).length % SLOT_TIMES.length];
+
+  const { data: existing } = await supa()
+    .from("li_schedule")
+    .select("post_id")
+    .eq("post_id", draftId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error: updErr } = await supa()
+      .from("li_schedule")
+      .update({ date: nextDate, time_utc: time, slot_label: format })
+      .eq("post_id", draftId);
+    if (updErr) throw updErr;
+  } else {
+    const { error: insErr } = await supa()
+      .from("li_schedule")
+      .insert({ post_id: draftId, date: nextDate, time_utc: time, slot_label: format, approval_status: "planned" });
+    if (insErr) throw insErr;
+  }
+}
