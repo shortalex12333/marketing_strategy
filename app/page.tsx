@@ -3,12 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   AugmentedPost,
-  BankEntry,
   CaptureRow,
 } from "@/lib/types";
 
-type Tab = "board" | "dashboard" | "schedule" | "roadmap" | "pages" | "posts" | "analytics" | "bank" | "briefs" | "drafts" | "engage";
-type EngageData = { categories: { theme: string; use_when: string; lines: string[] }[] };
+type Tab = "board" | "analytics" | "pages" | "drafts";
 
 interface PageReport {
   fetched_at: string;
@@ -24,47 +22,6 @@ interface PageReport {
   notes: string;
   _source?: string;
   _age_min?: number;
-}
-
-interface RoadmapSlide {
-  n: number;
-  mode: "dark" | "light";
-  h?: string;
-  b?: string;
-  card?: string;
-  atmosphere?: string;
-  emphasis?: string;
-  bg_variant?: string;
-  lightVariant?: string;
-}
-
-interface RoadmapCarousel {
-  slot: string;
-  id: string;
-  bank_ref: string;
-  hook: string;
-  pillar: string;
-  usp: string;
-  targets: string[];
-  scenario: string;
-  proposed_day: string;
-  atmosphere: string;
-  emphasis_word: string;
-  why_engages: string;
-  anti_sameness: string;
-  caption: string;
-  slides: RoadmapSlide[];
-}
-
-interface RoadmapResponse {
-  version: string;
-  wave: number;
-  format: string;
-  cadence: string;
-  source: string;
-  status: string;
-  moodboard_atmospheres: Record<string, string>;
-  carousels: RoadmapCarousel[];
 }
 
 interface DraftSlide {
@@ -83,6 +40,7 @@ interface Draft {
   id: string;
   bank_id: string;
   ord: number;
+  created_at?: string;
   format: string;
   hook: string;
   body?: string;
@@ -132,21 +90,9 @@ interface ScheduleItem {
   storage_slug?: string | null;
 }
 
-interface Checkpoint {
-  date: string;
-  label: string;
-  action: string;
-}
-
 interface ScheduleResponse {
   version: string;
-  phase: string;
-  cadence_rule: string;
-  primary_account: string;
-  company_page_role: string;
   calendar: ScheduleItem[];
-  checkpoints: Checkpoint[];
-  next_brief_due: string;
 }
 
 interface AppState {
@@ -155,17 +101,6 @@ interface AppState {
   bank_count: number;
   avg_eqs: number | null;
   now_utc: string;
-}
-
-interface BriefResponse {
-  ok: boolean;
-  mode: string;
-  picks: (BankEntry & {
-    usp_code: string;
-    primary_target: string;
-    scenario_code: string;
-  })[];
-  median_eqs_trailing_4wk: number | null;
 }
 
 function fmtDate(s: string | null | undefined): string {
@@ -217,32 +152,52 @@ function CapturePills({
   );
 }
 
+/** One wedge of a pie/donut, cx/cy/r in SVG units, angles in degrees (0 = top, clockwise). */
+function pieSlicePath(cx: number, cy: number, r: number, startDeg: number, endDeg: number): string {
+  const a0 = ((startDeg - 90) * Math.PI) / 180;
+  const a1 = ((endDeg - 90) * Math.PI) / 180;
+  const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0);
+  const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+  const large = endDeg - startDeg > 180 ? 1 : 0;
+  return `M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 ${large},1 ${x1.toFixed(1)},${y1.toFixed(1)} Z`;
+}
+
+/** A simple SVG line-chart path (and matching point list) for a series of numbers. */
+function sparklinePath(values: number[], w: number, h: number, pad = 6): { path: string; points: { x: number; y: number }[] } {
+  if (values.length === 0) return { path: "", points: [] };
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const range = max - min || 1;
+  const step = values.length > 1 ? (w - pad * 2) / (values.length - 1) : 0;
+  const points = values.map((v, i) => ({
+    x: pad + i * step,
+    y: h - pad - ((v - min) / range) * (h - pad * 2),
+  }));
+  const path = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  return { path, points };
+}
+
+type PostHealth = "live" | "pending" | "stuck" | "dead";
+const HEALTH_COLOR: Record<PostHealth, string> = {
+  live: "#5cb88c", pending: "#c8a85c", stuck: "#c87b7b", dead: "#666",
+};
+
 export default function Page() {
   const [tab, setTab] = useState<Tab>("board");
   const [state, setState] = useState<AppState | null>(null);
   const [posts, setPosts] = useState<AugmentedPost[]>([]);
   const [analytics, setAnalytics] = useState<(CaptureRow & { eqs: number | null })[]>([]);
-  const [bank, setBank] = useState<BankEntry[]>([]);
-  const [bankQuery, setBankQuery] = useState("");
-  const [uspFilter, setUspFilter] = useState("");
-  const [briefMode, setBriefMode] = useState<"recovery" | "ramp" | "daily">("recovery");
-  const [latestBrief, setLatestBrief] = useState<BriefResponse | null>(null);
   const [drafts, setDrafts] = useState<DraftsResponse | null>(null);
+  const [archiveQuery, setArchiveQuery] = useState("");
+  const [archiveStatus, setArchiveStatus] = useState("");
   const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
-  const [roadmap, setRoadmap] = useState<RoadmapResponse | null>(null);
   const [pageReport, setPageReport] = useState<PageReport | null>(null);
   const [pagesLoading, setPagesLoading] = useState(false);
+  const [pagesError, setPagesError] = useState<string | null>(null);
   const [expandedDraft, setExpandedDraft] = useState<string | null>(null);
-  // Schedule view: hide DONE (posted / superseded) by default — only show what's left to post.
-  const [showPosted, setShowPosted] = useState(false);
-  const scheduleRemaining = (schedule?.calendar ?? []).filter((i) => {
-    const a = (i.approval_status || "").toLowerCase();
-    return !a.startsWith("posted") && !a.startsWith("superseded");
-  });
   // When a calendar row's Comment/Posted button opens the draft, tell DraftDetail
   // which action to jump to.
   const [rowAuto, setRowAuto] = useState<"posted" | "comment" | null>(null);
-  const [expandedRoadmap, setExpandedRoadmap] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; kind: "success" | "error" } | null>(null);
 
   const [url, setUrl] = useState("");
@@ -273,11 +228,6 @@ export default function Page() {
     if (r.ok) setAnalytics(await r.json());
   }, []);
 
-  const loadBank = useCallback(async () => {
-    const r = await fetch("/api/bank", { cache: "no-store" });
-    if (r.ok) setBank(await r.json());
-  }, []);
-
   const loadDrafts = useCallback(async () => {
     const r = await fetch("/api/drafts", { cache: "no-store" });
     if (r.ok) setDrafts(await r.json());
@@ -292,21 +242,20 @@ export default function Page() {
     setPagesLoading(true);
     try {
       const r = await fetch("/api/linkedin-pages" + (force ? "?refresh=1" : ""), { cache: "no-store" });
-      if (r.ok) setPageReport(await r.json());
+      const j = await r.json().catch(() => null);
+      if (r.ok) {
+        setPageReport(j);
+        setPagesError(null);
+      } else {
+        // Previously: a failed fetch left the UI silently stuck on "Loading…"
+        // forever, indistinguishable from still-in-progress. Surface it.
+        setPagesError((j && (j.error || j._source)) || `Request failed (${r.status})`);
+      }
+    } catch (e) {
+      setPagesError((e as Error).message || "Network error");
     } finally {
       setPagesLoading(false);
     }
-  }, []);
-
-  const loadRoadmap = useCallback(async () => {
-    const r = await fetch("/api/roadmap", { cache: "no-store" });
-    if (r.ok) setRoadmap(await r.json());
-  }, []);
-
-  const [engage, setEngage] = useState<EngageData | null>(null);
-  const loadEngage = useCallback(async () => {
-    const r = await fetch("/api/engagement-comments", { cache: "no-store" });
-    if (r.ok) setEngage(await r.json());
   }, []);
 
   // "Trigger Changes" — bulk-revise every draft that has un-actioned comments.
@@ -342,16 +291,13 @@ export default function Page() {
 
   useEffect(() => {
     if (tab === "analytics") loadAnalytics();
-    if (tab === "bank") loadBank();
     if (tab === "drafts" && !drafts) loadDrafts();
-    if (tab === "schedule" || tab === "board") {
+    if (tab === "board") {
       if (!schedule) loadSchedule();
       if (!drafts) loadDrafts();
     }
-    if (tab === "roadmap" && !roadmap) loadRoadmap();
     if (tab === "pages" && !pageReport) loadPages();
-    if (tab === "engage" && !engage) loadEngage();
-  }, [tab, loadAnalytics, loadBank, loadDrafts, loadSchedule, loadRoadmap, loadPages, loadEngage, drafts, schedule, roadmap, pageReport, engage]);
+  }, [tab, loadAnalytics, loadDrafts, loadSchedule, loadPages, drafts, schedule, pageReport]);
 
   const handleDraftSaved = (id: string, patch: { caption?: string; body?: string; approval_status?: string }) => {
     setDrafts((prev) =>
@@ -445,37 +391,87 @@ export default function Page() {
     }
   };
 
-  const generateBrief = async () => {
-    try {
-      const r = await fetch("/api/briefs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: briefMode }),
-      });
-      const j: BriefResponse = await r.json();
-      if (j.ok) {
-        setLatestBrief(j);
-        showToast(`Brief generated — ${j.picks.length} picks.`);
-      } else {
-        showToast("Brief gen failed", "error");
-      }
-    } catch (e) {
-      showToast("Error: " + (e as Error).message, "error");
-    }
-  };
-
-  const filteredBank = useMemo(() => {
-    const q = bankQuery.toLowerCase();
-    return bank.filter((e) => {
-      const blob = `${e.id} ${e.hook} ${e.usp} ${e.targets} ${e.scenario} ${e.angle} ${e.anchor}`.toLowerCase();
-      if (q && !blob.includes(q)) return false;
-      if (uspFilter) {
-        const u = (e.usp || "").toUpperCase();
-        if (!u.includes(uspFilter)) return false;
-      }
-      return true;
+  // Analytics: classify each post's real capture health instead of trusting the
+  // "not_yet_in_api (48h ingestion delay)" string at face value — several posts
+  // stay in that state 10-40+ days past publish, which is a dead pipeline, not
+  // a delay. live = a real non-error capture exists; dead = zero capture rows
+  // ever; stuck = only errors, and older than the real 48h ingestion window;
+  // pending = genuinely still inside that window.
+  const postHealth = useMemo(() => {
+    const now = Date.now();
+    return posts.map((p) => {
+      const hasReal = !!p._latest_capture && p._latest_capture.impressions != null && !p._latest_capture.error;
+      const ageDays = (now - new Date(p.published_at).getTime()) / 86_400_000;
+      let status: PostHealth;
+      if (hasReal) status = "live";
+      else if (p._captures_count === 0) status = "dead";
+      else if (ageDays > 2) status = "stuck";
+      else status = "pending";
+      return { ...p, _status: status };
     });
-  }, [bank, bankQuery, uspFilter]);
+  }, [posts]);
+
+  const healthCounts = useMemo(() => {
+    const c: Record<PostHealth, number> = { live: 0, pending: 0, stuck: 0, dead: 0 };
+    for (const p of postHealth) c[p._status]++;
+    return c;
+  }, [postHealth]);
+
+  // Per-post mean, not per-row — averaging across all 4900+ raw capture rows
+  // over-weights whichever posts happened to get polled successfully more often.
+  const avgEqsPerPost = useMemo(() => {
+    const vals = postHealth.filter((p) => p._eqs != null).map((p) => p._eqs as number);
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  }, [postHealth]);
+
+  const avgCtrPerPost = useMemo(() => {
+    const vals = postHealth
+      .filter((p) => (p._latest_capture?.impressions ?? 0) > 0 && p._latest_capture?.clicks != null)
+      .map((p) => (p._latest_capture!.clicks as number) / (p._latest_capture!.impressions as number));
+    return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) * 100 : null;
+  }, [postHealth]);
+
+  // One trend line: total real (max-seen-per-post-per-day) impressions per day,
+  // across live/pending posts only — excludes stuck/dead posts and the ~96% of
+  // rows that are unchanged hourly re-polls of the same value.
+  const trendByDay = useMemo(() => {
+    const eligibleIds = new Set(postHealth.filter((p) => p._status !== "dead" && p._status !== "stuck").map((p) => p.id));
+    const byPostDay = new Map<string, number>();
+    for (const r of analytics) {
+      if (!eligibleIds.has(r.post_id) || r.impressions == null) continue;
+      const day = r.captured_at_utc.slice(0, 10);
+      const key = `${r.post_id}|${day}`;
+      byPostDay.set(key, Math.max(byPostDay.get(key) ?? 0, r.impressions));
+    }
+    const byDay = new Map<string, number>();
+    for (const [key, val] of byPostDay) {
+      const day = key.split("|")[1];
+      byDay.set(day, (byDay.get(day) ?? 0) + val);
+    }
+    return [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b));
+  }, [analytics, postHealth]);
+
+  // Archive (formerly "Drafts"): every li_drafts row, newest first — not ord-sorted
+  // (which buried undated new rows behind 235 older ones), with a status filter so
+  // the founder isn't scrolling past denied/shelved/posted content by default.
+  const sortedArchive = useMemo(() => {
+    const all = drafts?.drafts ?? [];
+    return [...all].sort((a, b) => {
+      if (a.created_at && b.created_at) return b.created_at.localeCompare(a.created_at);
+      if (a.created_at) return -1;
+      if (b.created_at) return 1;
+      return (b.ord ?? 0) - (a.ord ?? 0);
+    });
+  }, [drafts]);
+
+  const filteredArchive = useMemo(() => {
+    const q = archiveQuery.toLowerCase();
+    return sortedArchive.filter((d) => {
+      if (archiveStatus && !(d.approval_status || "").toLowerCase().startsWith(archiveStatus)) return false;
+      if (!q) return true;
+      return `${d.id} ${d.hook} ${d.doc_title ?? ""}`.toLowerCase().includes(q);
+    });
+  }, [sortedArchive, archiveQuery, archiveStatus]);
 
   return (
     <>
@@ -494,39 +490,19 @@ export default function Page() {
       </header>
 
       <nav className="tabs">
-        {(["board", "dashboard", "schedule", "roadmap", "pages", "posts", "analytics", "bank", "briefs", "drafts", "engage"] as Tab[]).map((t) => (
+        {(["board", "analytics", "pages", "drafts"] as Tab[]).map((t) => (
           <button key={t} className={`tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
-            {t[0].toUpperCase() + t.slice(1)}
+            {t === "drafts" ? "Archive" : t[0].toUpperCase() + t.slice(1)}
           </button>
         ))}
       </nav>
 
       <main>
         {tab === "board" && (
-          schedule ? (
-            <Board
-              items={schedule.calendar}
-              onApprove={approveScheduled}
-              onDeny={denyScheduled}
-              onOpen={(id) => { setRowAuto(null); setTab("schedule"); setExpandedDraft(id); }}
-            />
-          ) : (
-            <div className="panel"><div className="empty">Loading board…</div></div>
-          )
-        )}
-
-        {tab === "dashboard" && (
           <>
-            <div className="stat-grid">
-              <Stat label="Posts scheduled" value={state?.posts_count ?? "—"} hint="Tracked by impression-capture agent" />
-              <Stat label="Captures logged" value={state?.captures_count ?? "—"} hint="Rows in li_captures (Jarvis Supabase)" />
-              <Stat label="Avg EQS" value={state?.avg_eqs ?? "—"} hint="Across all captures · per skill §18.4" />
-              <Stat label="Bank entries" value={state?.bank_count ?? "—"} hint="USP × stakeholder × scenario" />
-            </div>
-
-            <div className="panel">
-              <h2>Submit a published post</h2>
-              <p className="small">
+            <details className="panel">
+              <summary style={{ cursor: "pointer" }}><h2 style={{ display: "inline", margin: 0 }}>Submit a published post</h2></summary>
+              <p className="small" style={{ marginTop: 10 }}>
                 Paste the LinkedIn post URL immediately after publishing. The local capture agent fires at +30m / +60m / +6h / +24h.
               </p>
               <div className="form-row">
@@ -547,202 +523,154 @@ export default function Page() {
                   <button onClick={submitPost}>Schedule</button>
                 </div>
               </div>
-            </div>
-
-            <div className="panel">
-              <h2>Recently scheduled · capture status</h2>
-              {posts.length === 0 ? (
-                <div className="empty">No scheduled posts yet. Submit one above.</div>
-              ) : (
-                posts.slice().reverse().slice(0, 5).map((p) => (
-                  <div key={p.id} style={{ borderBottom: "1px solid var(--border)", padding: "14px 0" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14 }}>
-                      <div style={{ flex: 1 }}>
-                        <div className="mono" style={{ color: "var(--teal)", fontSize: 12 }}>{p.id}</div>
-                        <div style={{ fontSize: 13, color: "var(--text-1)", margin: "4px 0" }}>
-                          <a href={p.url} target="_blank" rel="noopener noreferrer">{p.url}</a>
-                        </div>
-                        <div className="small">Published: {fmtDate(p.published_at)}</div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <CapturePills captures={p.captures} />
-                        <div style={{ marginTop: 8 }}>
-                          {p._latest_capture && (
-                            <div className="small">
-                              impressions: <span className="mono">{p._latest_capture.impressions ?? "—"}</span>
-                            </div>
-                          )}
-                          <div style={{ marginTop: 4 }}>EQS: <EqsBadge value={p._eqs} /></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+            </details>
+            {schedule ? (
+              <Board
+                items={schedule.calendar}
+                onApprove={approveScheduled}
+                onDeny={denyScheduled}
+                onOpen={(id) => { setRowAuto(null); setExpandedDraft(id); }}
+              />
+            ) : (
+              <div className="panel"><div className="empty">Loading board…</div></div>
+            )}
           </>
         )}
 
-        {tab === "posts" && (
-          <div className="panel">
-            <h2>All scheduled posts</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Label</th><th>Published</th><th>Captures</th><th>Impressions</th><th>EQS</th><th>URL</th><th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {posts.length === 0 && (
-                  <tr><td colSpan={7} className="empty">No scheduled posts yet.</td></tr>
-                )}
-                {posts.slice().reverse().map((p) => (
-                  <tr key={p.id}>
-                    <td className="mono">{p.id}</td>
-                    <td>{fmtDate(p.published_at)}</td>
-                    <td><CapturePills captures={p.captures} /></td>
-                    <td className="mono">{p._latest_capture?.impressions ?? "—"}</td>
-                    <td><EqsBadge value={p._eqs} /></td>
-                    <td>
-                      <a href={p.url} target="_blank" rel="noopener noreferrer" className="small mono">
-                        {p.url.slice(0, 50)}…
-                      </a>
-                    </td>
-                    <td><button className="danger" onClick={() => deletePost(p.id)}>Remove</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
         {tab === "analytics" && (
-          <div className="panel">
-            <h2>Capture log · all rows from Upstash</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Captured at</th><th>Post</th><th>Checkpoint</th><th>Impressions</th><th>Reactions</th><th>Comments</th><th>Reposts</th><th>EQS</th><th>Error</th>
-                </tr>
-              </thead>
-              <tbody>
-                {analytics.length === 0 && (
-                  <tr><td colSpan={9} className="empty">No captures logged yet.</td></tr>
-                )}
-                {analytics.slice().reverse().map((r, i) => (
-                  <tr key={i}>
-                    <td className="mono small">{fmtDate(r.captured_at_utc)}</td>
-                    <td className="mono">{r.post_id}</td>
-                    <td className="mono">{r.checkpoint}</td>
-                    <td className="mono">{r.impressions ?? "—"}</td>
-                    <td className="mono">{r.reactions ?? "—"}</td>
-                    <td className="mono">{r.comments ?? "—"}</td>
-                    <td className="mono">{r.reposts ?? "—"}</td>
-                    <td><EqsBadge value={r.eqs} /></td>
-                    <td className="small" style={{ color: "var(--red)" }}>{r.error || ""}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {tab === "bank" && (
-          <div className="panel">
-            <h2>Post bank · {bank.length} entries</h2>
-            <input type="text" className="bank-search" value={bankQuery} onChange={(e) => setBankQuery(e.target.value)} placeholder="Search hook / USP / stakeholder / scenario / anchor…" />
-            <div className="form-row" style={{ marginBottom: 12 }}>
-              <label className="small">USP:</label>
-              <select value={uspFilter} onChange={(e) => setUspFilter(e.target.value)}>
-                <option value="">All</option>
-                {["U1", "U2", "U3", "U4", "U5", "BRAND", "INDUSTRY", "OTHER"].map((u) => (
-                  <option key={u}>{u}</option>
-                ))}
-              </select>
-            </div>
-            <div className="bank-list">
-              {filteredBank.length === 0 ? (
-                <div className="empty">No entries match.</div>
-              ) : (
-                filteredBank.map((e) => {
-                  const uspTag = (e.usp.match(/U[1-5]|BRAND|INDUSTRY/) || ["OTHER"])[0];
-                  return (
-                    <div key={e.id} className="bank-card">
-                      <div className="id">{e.id}</div>
-                      <div className="hook">{e.hook}</div>
-                      <div className="meta">
-                        <span className={`tag tag-${uspTag.toLowerCase()}`}>{uspTag}</span>
-                        <span>{e.targets}</span>
-                        <span>{e.scenario ? "Sc: " + e.scenario.slice(0, 30) : ""}</span>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        )}
-
-        {tab === "briefs" && (
           <>
+            <div className="stat-grid">
+              <Stat label="Avg EQS (per post)" value={avgEqsPerPost != null ? avgEqsPerPost.toFixed(1) : "—"} hint={`across ${healthCounts.live + healthCounts.pending} real posts, not per-row`} />
+              <Stat label="Avg CTR" value={avgCtrPerPost != null ? avgCtrPerPost.toFixed(1) + "%" : "—"} hint="clicks / impressions, live posts only" />
+              <Stat label="Capture health" value={`${healthCounts.live} live`} hint={`${healthCounts.stuck} stuck · ${healthCounts.dead} dead · ${healthCounts.pending} pending`} />
+              <Stat label="Posts tracked" value={posts.length} hint="scheduled + captured" />
+            </div>
+
             <div className="panel">
-              <h2>Generate a new brief</h2>
-              <div className="form-row">
-                <div className="form-group" style={{ flex: 0, minWidth: 180 }}>
-                  <label>Cadence</label>
-                  <select value={briefMode} onChange={(e) => setBriefMode(e.target.value as never)}>
-                    <option value="recovery">Recovery (3 picks)</option>
-                    <option value="ramp">Ramp (4 picks)</option>
-                    <option value="daily">Daily (5 picks)</option>
-                  </select>
-                </div>
-                <div className="form-group" style={{ flex: 0, minWidth: "auto" }}>
-                  <label>&nbsp;</label>
-                  <button onClick={generateBrief}>Generate</button>
-                </div>
+              <h2>Impressions per day · live &amp; pending posts</h2>
+              <p className="small">Max-seen-per-post-per-day, summed across posts — not a raw hourly-poll count.</p>
+              {trendByDay.length === 0 ? (
+                <div className="empty">No real capture data yet.</div>
+              ) : (() => {
+                const w = 640, h = 180;
+                const values = trendByDay.map(([, v]) => v);
+                const { path, points } = sparklinePath(values, w, h);
+                return (
+                  <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", height: "auto", maxWidth: 640 }}>
+                    <line x1={6} y1={h - 6} x2={w - 6} y2={h - 6} stroke="var(--border)" strokeWidth={1} />
+                    <path d={path} fill="none" stroke="var(--teal)" strokeWidth={2.5} strokeLinecap="round" />
+                    {points.length > 0 && (
+                      <circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r={3.5} fill="var(--teal)" />
+                    )}
+                  </svg>
+                );
+              })()}
+              <div className="small" style={{ marginTop: 6, color: "var(--text-2)" }}>
+                {trendByDay[0]?.[0]} → {trendByDay[trendByDay.length - 1]?.[0]}
               </div>
             </div>
-            {latestBrief && (
-              <div className="panel">
-                <h2>Latest brief · {latestBrief.mode}</h2>
-                {latestBrief.median_eqs_trailing_4wk != null && (
-                  <p className="small">Median EQS (trailing 4w): {latestBrief.median_eqs_trailing_4wk}</p>
-                )}
-                <table>
-                  <thead>
-                    <tr><th>#</th><th>ID</th><th>USP</th><th>Target</th><th>Sc</th><th>Hook</th></tr>
-                  </thead>
-                  <tbody>
-                    {latestBrief.picks.map((p, i) => (
-                      <tr key={p.id}>
-                        <td>{i + 1}</td>
-                        <td className="mono">{p.id}</td>
-                        <td><span className={`tag tag-${p.usp_code.toLowerCase()}`}>{p.usp_code}</span></td>
-                        <td>{p.primary_target}</td>
-                        <td>{p.scenario_code}</td>
-                        <td>{p.hook}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <details style={{ marginTop: 12 }}>
-                  <summary className="small" style={{ cursor: "pointer" }}>Full pick details</summary>
-                  {latestBrief.picks.map((p, i) => (
-                    <div key={p.id} style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
-                      <h3>Pick {i + 1} · {p.id} — {p.hook}</h3>
-                      <ul className="small">
-                        <li><strong>USP:</strong> {p.usp}</li>
-                        <li><strong>Targets:</strong> {p.targets}</li>
-                        <li><strong>Scenario:</strong> {p.scenario}</li>
-                        <li><strong>Angle:</strong> {p.angle}</li>
-                        <li><strong>Why it lands:</strong> {p.why_it_lands}</li>
-                        <li><strong>Anchor:</strong> {p.anchor}</li>
-                      </ul>
+
+            <div className="panel">
+              <h2>Capture-health mix</h2>
+              {(() => {
+                const total = healthCounts.live + healthCounts.pending + healthCounts.stuck + healthCounts.dead;
+                if (total === 0) return <div className="empty">No posts tracked yet.</div>;
+                let angle = 0;
+                const segs = (["live", "pending", "stuck", "dead"] as PostHealth[]).map((k) => {
+                  const frac = healthCounts[k] / total;
+                  const start = angle, end = angle + frac * 360;
+                  angle = end;
+                  return { k, start, end, n: healthCounts[k] };
+                }).filter((s) => s.n > 0);
+                return (
+                  <div style={{ display: "flex", gap: 24, alignItems: "center", flexWrap: "wrap" }}>
+                    <svg viewBox="0 0 140 140" style={{ width: 140, height: 140, flexShrink: 0 }}>
+                      {segs.map((s) => (
+                        <path key={s.k} d={pieSlicePath(70, 70, 62, s.start, s.end)} fill={HEALTH_COLOR[s.k]} stroke="var(--bg-1)" strokeWidth={2} />
+                      ))}
+                    </svg>
+                    <div>
+                      {segs.map((s) => (
+                        <div key={s.k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                          <span style={{ width: 10, height: 10, borderRadius: 2, background: HEALTH_COLOR[s.k], display: "inline-block" }} />
+                          <span className="small" style={{ textTransform: "capitalize" }}>{s.k}</span>
+                          <span className="mono small" style={{ color: "var(--text-2)" }}>{s.n}</span>
+                        </div>
+                      ))}
                     </div>
+                  </div>
+                );
+              })()}
+              <p className="small" style={{ marginTop: 10, color: "var(--text-2)" }}>
+Stuck = posts still showing not_yet_in_api past the real 48h ingestion window, a capture-pipeline failure, not a delay.
+              </p>
+            </div>
+
+            <div className="panel">
+              <h2>All scheduled posts</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Label</th><th>Status</th><th>Published</th><th>Captures</th><th>Impressions</th><th>EQS</th><th>URL</th><th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {postHealth.length === 0 && (
+                    <tr><td colSpan={8} className="empty">No scheduled posts yet.</td></tr>
+                  )}
+                  {postHealth.slice().reverse().map((p) => (
+                    <tr key={p.id}>
+                      <td className="mono">{p.id}</td>
+                      <td><span className="small" style={{ color: HEALTH_COLOR[p._status], textTransform: "capitalize" }}>{p._status}</span></td>
+                      <td>{fmtDate(p.published_at)}</td>
+                      <td><CapturePills captures={p.captures} /></td>
+                      <td className="mono">{p._latest_capture?.impressions ?? "—"}</td>
+                      <td><EqsBadge value={p._eqs} /></td>
+                      <td>
+                        <a href={p.url} target="_blank" rel="noopener noreferrer" className="small mono">
+                          {p.url.slice(0, 50)}…
+                        </a>
+                      </td>
+                      <td><button className="danger" onClick={() => deletePost(p.id)}>Remove</button></td>
+                    </tr>
                   ))}
-                </details>
-              </div>
-            )}
+                </tbody>
+              </table>
+            </div>
+
+            <details className="panel">
+              <summary style={{ cursor: "pointer" }}><h2 style={{ display: "inline", margin: 0 }}>Raw capture log (debug) · {analytics.length} rows</h2></summary>
+              <table style={{ marginTop: 14 }}>
+                <thead>
+                  <tr>
+                    <th>Captured at</th><th>Post</th><th>Checkpoint</th><th>Impressions</th><th>Reactions</th><th>Comments</th><th>Reposts</th><th>EQS</th><th>Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {analytics.length === 0 && (
+                    <tr><td colSpan={9} className="empty">No captures logged yet.</td></tr>
+                  )}
+                  {analytics.slice().reverse().slice(0, 500).map((r, i) => (
+                    <tr key={i}>
+                      <td className="mono small">{fmtDate(r.captured_at_utc)}</td>
+                      <td className="mono">{r.post_id}</td>
+                      <td className="mono">{r.checkpoint}</td>
+                      <td className="mono">{r.impressions ?? "—"}</td>
+                      <td className="mono">{r.reactions ?? "—"}</td>
+                      <td className="mono">{r.comments ?? "—"}</td>
+                      <td className="mono">{r.reposts ?? "—"}</td>
+                      <td><EqsBadge value={r.eqs} /></td>
+                      <td className="small" style={{ color: "var(--red)" }}>{r.error || ""}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {analytics.length > 500 && (
+                <p className="small" style={{ marginTop: 8, color: "var(--text-2)" }}>
+                  Showing the most recent 500 of {analytics.length} rows.
+                </p>
+              )}
+            </details>
           </>
         )}
 
@@ -752,26 +680,49 @@ export default function Page() {
               <>
                 <div className="panel">
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                    <h2 style={{ margin: 0 }}>{drafts.drafts.length} post drafts · {drafts.version}</h2>
+                    <h2 style={{ margin: 0 }}>Archive · {filteredArchive.length} of {drafts.drafts.length}</h2>
                     <button onClick={triggerRevise} disabled={revising} title="Bulk-revise every draft that has new comments — the local agent applies your feedback and re-stages them">
                       {revising ? "Triggering…" : "⟳ Trigger Changes"}
                     </button>
                   </div>
-                  <p className="small">Source: <span className="mono">{drafts.source}</span></p>
-                  {drafts.fix_log && drafts.fix_log.length > 0 && (
-                    <details style={{ marginTop: 10 }}>
-                      <summary className="small" style={{ cursor: "pointer" }}>Fix log ({drafts.fix_log.length} review fixes applied)</summary>
-                      <ul className="small" style={{ marginTop: 8 }}>
-                        {drafts.fix_log.map((f, i) => <li key={i}>{f}</li>)}
-                      </ul>
-                    </details>
+                  <p className="small">Every draft ever generated, newest first — approved/scheduled ones live on Board; this is the full history including denied, killed, shelved, and posted content.</p>
+                  <div className="form-row" style={{ marginTop: 10 }}>
+                    <div className="form-group" style={{ flex: 3 }}>
+                      <input type="text" value={archiveQuery} onChange={(e) => setArchiveQuery(e.target.value)} placeholder="Search id / hook / title…" />
+                    </div>
+                    <div className="form-group" style={{ flex: 0, minWidth: 200 }}>
+                      <select value={archiveStatus} onChange={(e) => setArchiveStatus(e.target.value)}>
+                        <option value="">All statuses</option>
+                        <option value="awaiting">Awaiting CEO</option>
+                        <option value="approved">Approved</option>
+                        <option value="denied">Denied</option>
+                        <option value="posted">Posted</option>
+                        <option value="killed">Killed</option>
+                        <option value="shelved">Shelved</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div className="panel" style={{ padding: 0 }}>
+                  {filteredArchive.length === 0 ? (
+                    <div className="empty">No drafts match.</div>
+                  ) : (
+                    filteredArchive.map((d) => {
+                      const st = (d.approval_status || "").toLowerCase();
+                      const color = st.startsWith("posted") ? "var(--green)" : st === "approved" ? "var(--green)" : st === "denied" || st.startsWith("killed") ? "var(--red)" : "var(--text-2)";
+                      return (
+                        <div key={d.id} onClick={() => { setRowAuto(null); setExpandedDraft(d.id); }}
+                          style={{ display: "grid", gridTemplateColumns: "1fr 160px", gap: 12, padding: "12px 16px", borderBottom: "1px solid var(--border)", cursor: "pointer", alignItems: "center" }}>
+                          <div>
+                            <div className="mono small" style={{ color: "var(--teal)" }}>{d.id}</div>
+                            <div style={{ fontSize: 13.5, marginTop: 2 }}>{d.hook}</div>
+                          </div>
+                          <div className="small" style={{ color, textAlign: "right", textTransform: "capitalize" }}>{d.approval_status}</div>
+                        </div>
+                      );
+                    })
                   )}
                 </div>
-                {drafts.drafts.map((d) => (
-                  <div className="panel" key={d.id}>
-                    <DraftDetail draft={d} onSaved={handleDraftSaved} onToast={showToast} />
-                  </div>
-                ))}
               </>
             ) : (
               <div className="panel"><div className="empty">Loading drafts…</div></div>
@@ -797,7 +748,20 @@ export default function Page() {
             </div>
 
             {!pageReport ? (
-              <div className="panel"><div className="empty">{pagesLoading ? "Fetching from LinkedIn (one feed call, rate-limited)…" : "Loading…"}</div></div>
+              pagesLoading ? (
+                <div className="panel"><div className="empty">Fetching from LinkedIn (one feed call, rate-limited)…</div></div>
+              ) : pagesError ? (
+                <div className="panel">
+                  <div className="empty" style={{ color: "var(--red)" }}>
+                    LinkedIn fetch failed: {pagesError}
+                  </div>
+                  <p className="small" style={{ textAlign: "center", marginTop: 8 }}>
+                    This has never successfully cached a result yet. <button className="ghost" onClick={() => loadPages(true)}>Retry</button>
+                  </p>
+                </div>
+              ) : (
+                <div className="panel"><div className="empty">Loading…</div></div>
+              )
             ) : (
               <>
                 <div className="stat-grid">
@@ -856,331 +820,39 @@ export default function Page() {
           </>
         )}
 
-        {tab === "roadmap" && (
-          <>
-            {roadmap ? (
-              <>
-                <div className="panel">
-                  <h2>Wave {roadmap.wave} · Carousel Roadmap · {roadmap.status}</h2>
-                  <p className="small"><strong>Format:</strong> {roadmap.format}</p>
-                  <p className="small"><strong>Cadence:</strong> {roadmap.cadence}</p>
-                  <p className="small"><strong>Source:</strong> <span className="mono">{roadmap.source}</span></p>
-                  <details style={{ marginTop: 14 }}>
-                    <summary className="small" style={{ cursor: "pointer" }}>Moodboard atmospheres</summary>
-                    <ul className="small" style={{ marginTop: 8 }}>
-                      {Object.entries(roadmap.moodboard_atmospheres).map(([k, v]) => (
-                        <li key={k}><strong style={{ color: k === "red" ? "var(--red)" : k === "amber" ? "var(--amber)" : k === "teal" ? "var(--teal)" : k === "green" ? "var(--green)" : "var(--text-1)" }}>{k}:</strong> {v}</li>
-                      ))}
-                    </ul>
-                  </details>
-                </div>
-
-                <div className="panel">
-                  <h2>{roadmap.carousels.length} storylines · click any row to expand the full storyline</h2>
-                  {roadmap.carousels.map((c) => {
-                    const isOpen = expandedRoadmap === c.id;
-                    const atmoColours = (s: string) =>
-                      s.includes("red") ? "var(--red)" :
-                      s.includes("amber") ? "var(--amber)" :
-                      s.includes("teal") ? "var(--teal)" :
-                      s.includes("green") ? "var(--green)" : "var(--text-2)";
-                    return (
-                      <div key={c.id} style={{ borderBottom: "1px solid var(--border)" }}>
-                        <div
-                          onClick={() => setExpandedRoadmap(isOpen ? null : c.id)}
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "70px 110px 200px 1fr 140px",
-                            gap: 12,
-                            padding: "14px 4px",
-                            cursor: "pointer",
-                            alignItems: "center",
-                          }}
-                        >
-                          <div className="mono" style={{ color: isOpen ? "var(--teal)" : "var(--text-1)" }}>
-                            {isOpen ? "▼ " : "▶ "}{c.slot}
-                          </div>
-                          <div className="mono small">{c.proposed_day}</div>
-                          <div className="small mono">{c.usp}</div>
-                          <div style={{ fontSize: 13 }}>
-                            {c.hook.length > 65 ? c.hook.slice(0, 65) + "…" : c.hook}
-                          </div>
-                          <div className="small mono" style={{ color: atmoColours(c.atmosphere) }}>
-                            {c.atmosphere.split(" ")[0]}
-                          </div>
-                        </div>
-                        {isOpen && (
-                          <div style={{ padding: "16px 4px 28px", background: "var(--bg-0)", borderTop: "1px solid var(--border)" }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 16 }}>
-                              <div>
-                                <h3>Why it engages</h3>
-                                <p className="small">{c.why_engages}</p>
-                                <h3 style={{ marginTop: 14 }}>Anti-sameness</h3>
-                                <p className="small">{c.anti_sameness}</p>
-                              </div>
-                              <div>
-                                <h3>Targets · scenario</h3>
-                                <p className="small mono">{(c.targets ?? []).join(" · ")}</p>
-                                <p className="small">{c.scenario}</p>
-                                <h3 style={{ marginTop: 14 }}>Atmosphere · emphasis</h3>
-                                <p className="small mono" style={{ color: atmoColours(c.atmosphere) }}>{c.atmosphere}</p>
-                                <p className="small">{c.emphasis_word}</p>
-                                <p className="small mono" style={{ color: "var(--text-2)", marginTop: 8 }}>bank: {c.bank_ref}</p>
-                              </div>
-                            </div>
-
-                            <h3 style={{ marginBottom: 10 }}>9-slide arc</h3>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10, marginBottom: 16 }}>
-                              {c.slides.map((s) => {
-                                const cardBg = s.mode === "dark" ? "var(--bg-1)" : "var(--bg-3)";
-                                const atmoColour =
-                                  s.atmosphere === "red" ? "rgba(192,80,58,0.25)" :
-                                  s.atmosphere === "amber" ? "rgba(196,137,59,0.25)" :
-                                  s.atmosphere === "teal" ? "rgba(90,171,204,0.25)" :
-                                  s.atmosphere === "green" ? "rgba(74,148,104,0.25)" :
-                                  null;
-                                return (
-                                  <div key={s.n} style={{
-                                    background: cardBg,
-                                    border: "1px solid var(--border)",
-                                    borderLeft: atmoColour ? `3px solid ${atmoColour.replace("0.25", "1")}` : "1px solid var(--border)",
-                                    borderRadius: 6,
-                                    padding: 14,
-                                    minHeight: 130,
-                                    fontSize: 12,
-                                    position: "relative",
-                                  }}>
-                                    {atmoColour && (
-                                      <div style={{
-                                        position: "absolute", top: 0, right: 0, bottom: 0, left: 0,
-                                        background: `radial-gradient(ellipse at 50% 60%, ${atmoColour} 0%, transparent 70%)`,
-                                        pointerEvents: "none",
-                                      }} />
-                                    )}
-                                    <div className="mono" style={{ fontSize: 10, color: "var(--text-2)", marginBottom: 8, position: "relative" }}>
-                                      Slide {s.n} · {s.mode}
-                                      {s.atmosphere && <span style={{ color: atmoColours(s.atmosphere), marginLeft: 6 }}>· {s.atmosphere}</span>}
-                                      {s.card && <span style={{ marginLeft: 6 }}>· card:{s.card}</span>}
-                                      {s.lightVariant && <span style={{ marginLeft: 6 }}>· {s.lightVariant}</span>}
-                                    </div>
-                                    <div style={{ position: "relative", fontWeight: 500, lineHeight: 1.3, marginBottom: 6 }}>{s.h}</div>
-                                    {s.b && <div className="small" style={{ position: "relative", lineHeight: 1.4 }}>{s.b}</div>}
-                                    {s.emphasis && (
-                                      <div className="small mono" style={{ position: "relative", marginTop: 6, color: "var(--teal)", fontStyle: "italic" }}>
-                                        emph: <em>{s.emphasis}</em>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-
-                            <h3 style={{ marginBottom: 8 }}>Caption</h3>
-                            <pre style={{ whiteSpace: "pre-wrap", fontFamily: "var(--sans)", background: "var(--bg-1)", padding: 14, borderRadius: 4, fontSize: 12, lineHeight: 1.5, color: "var(--text-1)" }}>{c.caption}</pre>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            ) : (
-              <div className="panel"><div className="empty">Loading roadmap…</div></div>
-            )}
-          </>
-        )}
-
-        {tab === "engage" && (
-          <div className="panel">
-            <h2>Engagement comments · paste on others&apos; posts to build awareness</h2>
-            <p className="small" style={{ color: "var(--text-2)", marginBottom: 14 }}>
-              On-brand lines for genuine engagement on maritime / PMS posts. Observational, never
-              salesy, never names CelesteOS — the comment earns the profile click. Copy, then tailor a
-              word if the post needs it.
-            </p>
-            {!engage && <p className="small">Loading…</p>}
-            {engage?.categories.map((cat, ci) => (
-              <div key={ci} style={{ marginBottom: 18 }}>
-                <h3 style={{ margin: "0 0 2px" }}>{cat.theme}</h3>
-                <div className="mono small" style={{ color: "var(--text-2)", marginBottom: 8 }}>{cat.use_when}</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {cat.lines.map((line, li) => (
-                    <div key={li} style={{ display: "flex", gap: 8, alignItems: "flex-start", background: "var(--bg-0)", border: "1px solid var(--border)", borderRadius: 4, padding: "10px 12px" }}>
-                      <div className="small" style={{ flex: 1, lineHeight: 1.5 }}>{line}</div>
-                      <button className="ghost" style={{ flexShrink: 0 }} onClick={() => { navigator.clipboard.writeText(line).then(() => showToast("Copied — paste on the post")); }}>Copy</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab === "schedule" && (
-          <>
-            {schedule ? (
-              <>
-                <div className="panel">
-                  <h2>{schedule.phase}</h2>
-                  <p className="small"><strong>Cadence rule:</strong> {schedule.cadence_rule}</p>
-                  <p className="small"><strong>Primary account:</strong> {schedule.primary_account}</p>
-                  <p className="small"><strong>Company page role:</strong> {schedule.company_page_role}</p>
-                  <p className="small" style={{ marginTop: 12 }}><strong>Next brief due:</strong> {schedule.next_brief_due}</p>
-                </div>
-
-                <div className="panel">
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                    <h2 style={{ margin: 0 }}>Calendar · {scheduleRemaining.length} left to post</h2>
-                    {schedule.calendar.length > scheduleRemaining.length && (
-                      <button className="ghost" onClick={() => setShowPosted(!showPosted)}>
-                        {showPosted ? "Hide done" : `Show ${schedule.calendar.length - scheduleRemaining.length} done`}
-                      </button>
-                    )}
-                  </div>
-                  {(showPosted ? schedule.calendar : scheduleRemaining).map((item) => {
-                    const draft = drafts?.drafts.find((d) => d.id === item.post_id);
-                    const isOpen = expandedDraft === item.post_id;
-                    const slug = item.storage_slug ?? null;
-                    const thumb = slug ? `${CAROUSEL_BUCKET_URL}/${slug}/slide_01.png` : null;
-                    const pdf = item.pdf_url ?? null;
-                    return (
-                      <div key={item.post_id} style={{ borderBottom: "1px solid var(--border)" }}>
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "110px 100px 1fr 220px",
-                            gap: 14,
-                            padding: "14px 4px",
-                            alignItems: "center",
-                          }}
-                        >
-                          {thumb ? (
-                            <a href={thumb} target="_blank" rel="noopener noreferrer" title="Open slide 1 full size">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={thumb}
-                                alt={`Slide 1 of ${item.hook}`}
-                                style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 4, border: "1px solid var(--border)", display: "block" }}
-                              />
-                            </a>
-                          ) : (
-                            <div style={{ width: 100, height: 100, borderRadius: 4, border: "1px dashed var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-2)", fontSize: 11, textAlign: "center" }}>
-                              not yet<br/>rendered
-                            </div>
-                          )}
-                          <div>
-                            <div className="mono" style={{ color: "var(--teal)", fontSize: 12 }}>{item.day.slice(0, 3)}</div>
-                            <div className="mono small">{item.date}</div>
-                            <div className="mono small">{item.time_utc} UTC</div>
-                            <div className="mono small" style={{ color: "var(--text-2)", marginTop: 4 }}>{item.format}</div>
-                          </div>
-                          <div
-                            onClick={() => setExpandedDraft(isOpen ? null : item.post_id)}
-                            style={{ cursor: "pointer" }}
-                            title="Click to expand the full draft (caption, alt text, all 9 slides)"
-                          >
-                            <div style={{ fontSize: 14, lineHeight: 1.35, marginBottom: 6 }}>
-                              <span className="mono" style={{ color: isOpen ? "var(--teal)" : "var(--text-2)", marginRight: 6 }}>
-                                {isOpen ? "▼" : "▶"}
-                              </span>
-                              {item.hook}
-                            </div>
-                            {item.doc_title && (
-                              <div className="small" style={{ color: "var(--text-2)" }}>{item.doc_title}</div>
-                            )}
-                            <span className="tag" style={{ display: "inline-block", marginTop: 6, color: "var(--amber)", borderColor: "rgba(200,168,92,0.4)" }}>
-                              {item.approval_status}
-                            </span>
-                          </div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "stretch" }}>
-                            {pdf ? (
-                              <>
-                                <a href={pdf} target="_blank" rel="noopener noreferrer">
-                                  <button style={{ width: "100%" }}>Download PDF</button>
-                                </a>
-                                <a href={pdf} target="_blank" rel="noopener noreferrer">
-                                  <button className="ghost" style={{ width: "100%" }}>View PDF</button>
-                                </a>
-                              </>
-                            ) : (
-                              <div className="small" style={{ color: "var(--text-2)", textAlign: "center", padding: "8px 0" }}>
-                                PDF not yet rendered
-                              </div>
-                            )}
-                            <button
-                              className="ghost"
-                              onClick={() => { setRowAuto(null); setExpandedDraft(isOpen ? null : item.post_id); }}
-                              style={{ width: "100%" }}
-                            >
-                              {isOpen ? "Hide draft" : "Show full draft"}
-                            </button>
-                            <button
-                              className="ghost"
-                              onClick={() => { setRowAuto("comment"); setExpandedDraft(item.post_id); }}
-                              style={{ width: "100%" }}
-                            >
-                              Comment
-                            </button>
-                            {(() => {
-                              const st = (item.approval_status || "").toLowerCase();
-                              if (st.startsWith("posted")) return null;
-                              if (st === "approved")
-                                return <span className="tag" style={{ textAlign: "center", color: "var(--green)", borderColor: "rgba(74,154,106,0.45)" }}>✓ Approved</span>;
-                              return (
-                                <button
-                                  onClick={() => approveScheduled(item.post_id)}
-                                  style={{ width: "100%", background: "rgba(74,154,106,0.15)", border: "1px solid rgba(74,154,106,0.45)", color: "var(--green, #4A9A6A)" }}
-                                  title="Approve this post — queues it for publishing"
-                                >
-                                  ✓ Approve
-                                </button>
-                              );
-                            })()}
-                            {(item.approval_status || "").toLowerCase().startsWith("posted") ? (
-                              <span className="tag" style={{ textAlign: "center", color: "var(--green)", borderColor: "rgba(74,222,128,0.4)" }}>✓ Posted</span>
-                            ) : (
-                              <button
-                                onClick={() => { setRowAuto("posted"); setExpandedDraft(item.post_id); }}
-                                style={{ width: "100%" }}
-                                title="Mark this live on LinkedIn — saves to li_posts"
-                              >
-                                Posted
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        {isOpen && (
-                          <div style={{ padding: "8px 4px 24px", background: "var(--bg-0)", borderTop: "1px solid var(--border)" }}>
-                            {draft ? (
-                              <DraftDetail draft={draft} onSaved={handleDraftSaved} onToast={showToast} autoOpen={rowAuto} />
-                            ) : drafts ? (
-                              <p className="small empty">No draft found for {item.post_id}.</p>
-                            ) : (
-                              <p className="small empty">Loading…</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="panel">
-                  <h2>Recovery checkpoints</h2>
-                  {schedule.checkpoints.map((cp) => (
-                    <div key={cp.date} style={{ padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
-                      <div className="mono" style={{ color: "var(--teal)", fontSize: 12 }}>{cp.date} · {cp.label}</div>
-                      <div className="small" style={{ marginTop: 4, lineHeight: 1.5 }}>{cp.action}</div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="panel"><div className="empty">Loading schedule…</div></div>
-            )}
-          </>
-        )}
       </main>
+
+      {expandedDraft && (() => {
+        const draft = drafts?.drafts.find((d) => d.id === expandedDraft);
+        const item = schedule?.calendar.find((c) => c.post_id === expandedDraft);
+        const pdf = item?.pdf_url ?? null;
+        const close = () => { setExpandedDraft(null); setRowAuto(null); };
+        return (
+          <div className="modal-overlay" onClick={close}>
+            <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-panel-head">
+                <div style={{ display: "flex", gap: 8 }}>
+                  {pdf && (
+                    <>
+                      <a href={pdf} target="_blank" rel="noopener noreferrer"><button>Download PDF</button></a>
+                      <a href={pdf} target="_blank" rel="noopener noreferrer"><button className="ghost">View PDF</button></a>
+                    </>
+                  )}
+                  <button className="ghost" onClick={() => setRowAuto("comment")}>Comment</button>
+                </div>
+                <button className="ghost" onClick={close}>Close ✕</button>
+              </div>
+              {draft ? (
+                <DraftDetail draft={draft} onSaved={handleDraftSaved} onToast={showToast} autoOpen={rowAuto} />
+              ) : drafts ? (
+                <p className="small empty">No draft found for {expandedDraft}.</p>
+              ) : (
+                <p className="small empty">Loading…</p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {toast && <div className={`toast ${toast.kind}`}>{toast.msg}</div>}
     </>
