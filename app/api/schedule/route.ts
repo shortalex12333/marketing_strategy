@@ -19,7 +19,13 @@ export async function GET() {
           time_utc: r.time_utc.slice(0, 5),
           day: r.day ?? "",
           slot_label: r.slot_label ?? "",
-          approval_status: r.approval_status,
+          // Source of truth is the joined draft's own approval_status — li_schedule's
+          // copy of this field is never updated after a post is approved/denied/posted
+          // (scheduleNextAvailableSlot() only touches date/time_utc/slot_label on
+          // approve), so reading r.approval_status here silently went stale the moment
+          // any post was approved. Fall back to the schedule row only if a draft is
+          // somehow missing (shouldn't happen, but fails safe rather than crashing).
+          approval_status: d?.approval_status ?? r.approval_status,
           hook: d?.hook ?? "(no draft found for this scheduled slot)",
           format: r.slot_label ?? "carousel",
           rationale: d?.rationale ?? "",

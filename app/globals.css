@@ -204,3 +204,24 @@ tbody tr:hover { background: var(--bg-2); }
 
 .empty { color: var(--text-2); font-style: italic; padding: 24px; text-align: center; }
 .small { font-size: 12px; color: var(--text-2); }
+
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 40px 20px;
+  z-index: 200;
+  overflow-y: auto;
+}
+.modal-panel {
+  background: var(--bg-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  max-width: 760px; width: 100%;
+  padding: 20px 24px 28px;
+  margin-bottom: 40px;
+}
+.modal-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 14px;
+}
