@@ -32,6 +32,7 @@ export async function GET() {
           doc_title: d?.doc_title ?? "",
           pdf_url: d?.pdf_url ?? null,
           storage_slug: d?.storage_slug ?? null,
+          created_at: d?.created_at ?? null,
         };
       }),
       checkpoints: [] as Array<{ date: string; label: string; action: string }>,
