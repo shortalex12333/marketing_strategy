@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import type { ScheduledPost, CaptureRow, CaptureSummary, Checkpoint, AugmentedPost } from "./types";
 import { eqs } from "./eqs";
+import type { PageReport, DmaPost } from "./linkedin";
 
 /**
  * Supabase client (server-side, service role).
@@ -525,6 +526,20 @@ interface DbPostBank {
   status: string;
 }
 
+/** bank_id -> pain_class (e.g. "handover", "vitamin-search") for the small
+ *  subset of published posts whose draft carries a bank_id lineage. Kept
+ *  separate from listBank() because that function already discards
+ *  pain_class while reshaping description into angle/why_it_lands. */
+export async function listBankPainClasses(): Promise<Record<string, string>> {
+  const { data, error } = await supa().from("li_post_bank").select("bank_id,pain_class");
+  if (error) throw error;
+  const map: Record<string, string> = {};
+  for (const r of (data || []) as { bank_id: string; pain_class: string | null }[]) {
+    if (r.pain_class) map[r.bank_id] = r.pain_class;
+  }
+  return map;
+}
+
 export async function listBank(): Promise<BankEntry[]> {
   const { data, error } = await supa()
     .from("li_post_bank")
@@ -625,4 +640,99 @@ export async function scheduleNextAvailableSlot(draftId: string, format: string)
       .insert({ post_id: draftId, date: nextDate, time_utc: time, slot_label: format, approval_status: "planned" });
     if (insErr) throw insErr;
   }
+}
+
+// ─── Real-metrics enrichment (DMA posts → our own drafting pipeline) ────────
+
+/** Normalize free text for fuzzy caption matching: lowercase, strip URLs and
+ *  punctuation, collapse whitespace, take a fixed-length prefix. LinkedIn's
+ *  DMA commentary occasionally differs from our stored hook by a trailing
+ *  hashtag block or a re-wrapped line break, so exact equality is too strict. */
+function normalizeForMatch(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 70);
+}
+
+/** Attaches _internal_format / _pain_class / _draft_id to each real DMA post
+ *  by matching it back to the li_posts/li_drafts row it came from. Coverage
+ *  is partial by design — draft_id lineage only reaches ~75% of published
+ *  posts, and pain_class only reaches those whose draft also carries a
+ *  bank_id — callers must show the resulting sample size, not assume full
+ *  coverage. */
+export async function enrichPageReport(report: PageReport): Promise<PageReport> {
+  const [dbPosts, drafts, painClasses] = await Promise.all([
+    supa()
+      .from("li_posts")
+      .select("id,draft_id")
+      .then(({ data, error }) => {
+        if (error) throw error;
+        return (data || []) as { id: string; draft_id: string | null }[];
+      }),
+    listDrafts(),
+    listBankPainClasses(),
+  ]);
+
+  const draftById = new Map(drafts.map((d) => [d.id, d]));
+  const candidates: { draftId: string; key: string }[] = [];
+  for (const p of dbPosts) {
+    if (!p.draft_id) continue;
+    const d = draftById.get(p.draft_id);
+    if (!d) continue;
+    const key = normalizeForMatch(d.hook || d.caption || "");
+    if (key.length >= 12) candidates.push({ draftId: d.id, key });
+  }
+
+  function findMatch(caption: string): string | null {
+    const key = normalizeForMatch(caption);
+    if (key.length < 12) return null;
+    const hit = candidates.find((c) => key.startsWith(c.key) || c.key.startsWith(key));
+    return hit ? hit.draftId : null;
+  }
+
+  const posts: DmaPost[] = report.posts.map((p) => {
+    const draftId = findMatch(p.caption);
+    const d = draftId ? draftById.get(draftId) : undefined;
+    const format = d ? deriveFormat(d) : null;
+    const painClass = d?.bank_id ? painClasses[d.bank_id] ?? null : null;
+    return { ...p, _internal_format: format, _pain_class: painClass, _draft_id: draftId };
+  });
+
+  return { ...report, posts };
+}
+
+// ─── Durable report cache (Supabase Storage, survives cold starts) ──────────
+// In-memory caching alone doesn't work on Vercel for a low-traffic route: a
+// cold instance's module state resets, so nearly every real request missed
+// the 6h freshness window and re-ran the full 60-90s DMA fetch chain (or hit
+// its timeout — see the linkedin-pages route, this was the perpetual-502
+// root cause). Persisting the last good report to storage means a cold
+// instance serves it instantly instead of refetching or failing.
+//
+// Uses a dedicated "dashboard-cache" bucket, not "carousels" — that bucket's
+// allowed_mime_types is locked to application/pdf|image/png|image/jpeg (it
+// serves rendered carousel assets to the CEO's browser), so a JSON upload
+// there 400s every time. dashboard-cache is private (service-role only,
+// never rendered in a browser) and scoped to application/json.
+const CACHE_BUCKET = "dashboard-cache";
+const CACHE_PATH = "linkedin_pages_report.json";
+
+export async function loadCachedReport(): Promise<PageReport | null> {
+  const { data, error } = await supa().storage.from(CACHE_BUCKET).download(CACHE_PATH);
+  if (error || !data) return null;
+  try {
+    return JSON.parse(await data.text()) as PageReport;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveCachedReport(report: PageReport): Promise<void> {
+  await supa()
+    .storage.from(CACHE_BUCKET)
+    .upload(CACHE_PATH, JSON.stringify(report), { upsert: true, contentType: "application/json" });
 }

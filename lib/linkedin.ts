@@ -107,22 +107,29 @@ function caption(p: Record<string, unknown>): string {
   return "";
 }
 
-interface PageReport {
+export interface DmaPost {
+  urn: string;
+  type: string;
+  caption: string;
+  publishedAt: number | null;
+  published: string;
+  lifecycle: string;
+  impressions: number;
+  clicks: number;
+  reactions: number;
+  comments: number;
+  ctr: string;
+  // Attached post-fetch by enrichPageReport() in lib/supabase.ts — a join back
+  // to our own drafting pipeline, absent for legacy/unmatched posts.
+  _internal_format?: string | null;
+  _pain_class?: string | null;
+  _draft_id?: string | null;
+}
+
+export interface PageReport {
   fetched_at: string;
   org: string;
-  posts: Array<{
-    urn: string;
-    type: string;
-    caption: string;
-    publishedAt: number | null;
-    published: string;
-    lifecycle: string;
-    impressions: number;
-    clicks: number;
-    reactions: number;
-    comments: number;
-    ctr: string;
-  }>;
+  posts: DmaPost[];
   by_type: Record<string, { n: number; impressions: number; clicks: number; reactions: number }>;
   visitors_360d: number | null;
   followers_360d: number | null;

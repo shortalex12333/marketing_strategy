@@ -8,20 +8,53 @@ import type {
 
 type Tab = "board" | "analytics" | "pages" | "drafts";
 
+interface DmaPost {
+  urn: string; type: string; caption: string;
+  publishedAt: number | null; published: string;
+  lifecycle: string; impressions: number; clicks: number;
+  reactions: number; comments: number; ctr: string;
+  // Joined server-side back to our own drafting pipeline where a match was
+  // found — null/absent for legacy or unmatched posts, never assume full coverage.
+  _internal_format?: string | null;
+  _pain_class?: string | null;
+  _draft_id?: string | null;
+}
+
 interface PageReport {
   fetched_at: string;
   org: string;
-  posts: Array<{
-    urn: string; type: string; caption: string; published: string;
-    lifecycle: string; impressions: number; clicks: number;
-    reactions: number; comments: number; ctr: string;
-  }>;
+  posts: DmaPost[];
   by_type: Record<string, { n: number; impressions: number; clicks: number; reactions: number }>;
   visitors_360d: number | null;
   followers_360d: number | null;
   notes: string;
   _source?: string;
   _age_min?: number;
+}
+
+type MetricsWindow = "7d" | "30d" | "90d";
+const WINDOW_DAYS: Record<MetricsWindow, number> = { "7d": 7, "30d": 30, "90d": 90 };
+
+const HOUR_BUCKETS: Array<{ label: string; from: number; to: number }> = [
+  { label: "Night (00–06 UTC)", from: 0, to: 6 },
+  { label: "Morning (06–11 UTC)", from: 6, to: 11 },
+  { label: "Midday (11–14 UTC)", from: 11, to: 14 },
+  { label: "Afternoon (14–18 UTC)", from: 14, to: 18 },
+  { label: "Evening (18–24 UTC)", from: 18, to: 24 },
+];
+const WEEKDAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+const PAIN_CLASS_LABEL: Record<string, { label: string; color: string }> = {
+  "handover": { label: "Handover", color: "#5AABCC" },
+  "vitamin-search": { label: "Search (vitamin)", color: "#6FBF8B" },
+  "anti-feature-receipts": { label: "Anti-feature receipts", color: "#E0635F" },
+  "vitamin-intelligence": { label: "Intelligence (vitamin)", color: "#6FBF8B" },
+  "vitamin-onboarding": { label: "Onboarding (vitamin)", color: "#6FBF8B" },
+  "unknown": { label: "Unclassified", color: "#666" },
+};
+
+function mean(vals: number[]): number | null {
+  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
 }
 
 interface DraftSlide {
@@ -195,6 +228,7 @@ export default function Page() {
   const [pagesLoading, setPagesLoading] = useState(false);
   const [pagesError, setPagesError] = useState<string | null>(null);
   const [expandedDraft, setExpandedDraft] = useState<string | null>(null);
+  const [metricsWindow, setMetricsWindow] = useState<MetricsWindow>("30d");
   // When a calendar row's Comment/Posted button opens the draft, tell DraftDetail
   // which action to jump to.
   const [rowAuto, setRowAuto] = useState<"posted" | "comment" | null>(null);
@@ -290,7 +324,10 @@ export default function Page() {
   }, [loadState, loadPosts]);
 
   useEffect(() => {
-    if (tab === "analytics") loadAnalytics();
+    if (tab === "analytics") {
+      loadAnalytics();
+      if (!pageReport) loadPages();
+    }
     if (tab === "drafts" && !drafts) loadDrafts();
     if (tab === "board") {
       if (!schedule) loadSchedule();
@@ -451,6 +488,96 @@ export default function Page() {
     return [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b));
   }, [analytics, postHealth]);
 
+  // ─── Real LinkedIn post metrics (DMA API), windowed 7d/30d/90d ───────────
+  // Everything below reads pageReport.posts — the official LinkedIn Data
+  // Portability numbers (impressions/clicks/reactions/comments per real
+  // published post), not the internal capture-pipeline health data above.
+  const windowPosts = useMemo(() => {
+    if (!pageReport) return [];
+    const cutoff = Date.now() - WINDOW_DAYS[metricsWindow] * 86_400_000;
+    return pageReport.posts.filter((p) => (p.publishedAt ?? 0) >= cutoff);
+  }, [pageReport, metricsWindow]);
+
+  const realAvgMetrics = useMemo(() => {
+    const n = windowPosts.length;
+    if (!n) return null;
+    return {
+      n,
+      impressions: mean(windowPosts.map((p) => p.impressions)),
+      clicks: mean(windowPosts.map((p) => p.clicks)),
+      reactions: mean(windowPosts.map((p) => p.reactions)),
+      comments: mean(windowPosts.map((p) => p.comments)),
+      ctr: mean(windowPosts.filter((p) => p.impressions > 0).map((p) => (p.clicks / p.impressions) * 100)),
+    };
+  }, [windowPosts]);
+
+  const realBestPost = useMemo(() => {
+    if (!windowPosts.length) return null;
+    return [...windowPosts].sort((a, b) => b.impressions - a.impressions)[0];
+  }, [windowPosts]);
+
+  // Best time of day: UTC-hour buckets from the real publishedAt timestamp.
+  const realByHour = useMemo(() => {
+    return HOUR_BUCKETS.map((b) => {
+      const inBucket = windowPosts.filter((p) => {
+        if (p.publishedAt == null) return false;
+        const h = new Date(p.publishedAt).getUTCHours();
+        return h >= b.from && h < b.to;
+      });
+      return { ...b, n: inBucket.length, avgImpressions: mean(inBucket.map((p) => p.impressions)) };
+    }).sort((a, b) => (b.avgImpressions ?? -1) - (a.avgImpressions ?? -1));
+  }, [windowPosts]);
+
+  const realByWeekday = useMemo(() => {
+    const byDay = new Map<number, DmaPost[]>();
+    for (const p of windowPosts) {
+      if (p.publishedAt == null) continue;
+      const d = new Date(p.publishedAt).getUTCDay();
+      (byDay.get(d) ?? byDay.set(d, []).get(d)!).push(p);
+    }
+    return WEEKDAY_LABELS.map((label, i) => {
+      const ps = byDay.get(i) ?? [];
+      return { label, n: ps.length, avgImpressions: mean(ps.map((p) => p.impressions)) };
+    }).sort((a, b) => (b.avgImpressions ?? -1) - (a.avgImpressions ?? -1));
+  }, [windowPosts]);
+
+  // Best post type: prefer our own format taxonomy (carousel/poll/image/…)
+  // where the enrichment join found a match, fall back to the DMA-derived
+  // type for posts with no internal match, so coverage gaps don't just
+  // silently drop posts from the ranking.
+  const realByFormat = useMemo(() => {
+    const byFmt = new Map<string, DmaPost[]>();
+    for (const p of windowPosts) {
+      const key = p._internal_format || p.type || "unknown";
+      (byFmt.get(key) ?? byFmt.set(key, []).get(key)!).push(p);
+    }
+    const matched = windowPosts.filter((p) => p._internal_format).length;
+    return {
+      coverage: { matched, total: windowPosts.length },
+      rows: [...byFmt.entries()]
+        .map(([format, ps]) => ({ format, n: ps.length, avgImpressions: mean(ps.map((p) => p.impressions)) }))
+        .sort((a, b) => (b.avgImpressions ?? -1) - (a.avgImpressions ?? -1)),
+    };
+  }, [windowPosts]);
+
+  // Best angle (pain_class): only reaches posts whose draft also carries a
+  // bank_id lineage — a real minority of posts. Surfaced with its coverage,
+  // not hidden, and never dressed up as a full breakdown.
+  const realByAngle = useMemo(() => {
+    const withAngle = windowPosts.filter((p) => p._pain_class);
+    const byClass = new Map<string, DmaPost[]>();
+    for (const p of withAngle) {
+      const key = p._pain_class!;
+      (byClass.get(key) ?? byClass.set(key, []).get(key)!).push(p);
+    }
+    return {
+      coverage: { matched: withAngle.length, total: windowPosts.length },
+      rows: [...byClass.entries()]
+        .map(([cls, ps]) => ({ cls, n: ps.length, avgImpressions: mean(ps.map((p) => p.impressions)) }))
+        .sort((a, b) => (b.avgImpressions ?? -1) - (a.avgImpressions ?? -1)),
+    };
+  }, [windowPosts]);
+
   // Archive (formerly "Drafts"): every li_drafts row, newest first — not ord-sorted
   // (which buried undated new rows behind 235 older ones), with a status filter so
   // the founder isn't scrolling past denied/shelved/posted content by default.
@@ -539,6 +666,172 @@ export default function Page() {
 
         {tab === "analytics" && (
           <>
+            <div className="panel">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+                <h2 style={{ margin: 0 }}>Real LinkedIn post metrics · official Data Portability API</h2>
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  {(["7d", "30d", "90d"] as MetricsWindow[]).map((w) => (
+                    <button
+                      key={w}
+                      className={metricsWindow === w ? "" : "ghost"}
+                      onClick={() => setMetricsWindow(w)}
+                    >
+                      {w}
+                    </button>
+                  ))}
+                  <button className="ghost" onClick={() => loadPages(true)} disabled={pagesLoading}>
+                    {pagesLoading ? "Fetching…" : "Refresh"}
+                  </button>
+                </div>
+              </div>
+              {pageReport && (
+                <p className="small" style={{ marginTop: 8 }}>
+                  fetched {fmtDate(pageReport.fetched_at)} · source: {pageReport._source}
+                  {pageReport._age_min != null ? ` · ${pageReport._age_min}m old` : ""}
+                </p>
+              )}
+            </div>
+
+            {!pageReport ? (
+              pagesLoading ? (
+                <div className="panel"><div className="empty">Fetching from LinkedIn (one feed call, rate-limited)…</div></div>
+              ) : pagesError ? (
+                <div className="panel">
+                  <div className="empty" style={{ color: "var(--red)" }}>LinkedIn fetch failed: {pagesError}</div>
+                  <p className="small" style={{ textAlign: "center", marginTop: 8 }}>
+                    <button className="ghost" onClick={() => loadPages(true)}>Retry</button>
+                  </p>
+                </div>
+              ) : (
+                <div className="panel"><div className="empty">Loading…</div></div>
+              )
+            ) : windowPosts.length === 0 ? (
+              <div className="panel">
+                <div className="empty">
+                  {`No real posts published in the last ${metricsWindow} (${pageReport.posts.length} total on record — try a wider window).`}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="stat-grid">
+                  <Stat label="Posts in window" value={realAvgMetrics!.n} hint={`of ${pageReport.posts.length} total on record`} />
+                  <Stat label="Avg impressions" value={realAvgMetrics!.impressions != null ? Math.round(realAvgMetrics!.impressions) : "—"} hint="per real published post" />
+                  <Stat label="Avg CTR" value={realAvgMetrics!.ctr != null ? realAvgMetrics!.ctr.toFixed(1) + "%" : "—"} hint="clicks / impressions" />
+                  <Stat label="Avg reactions + comments" value={realAvgMetrics!.reactions != null && realAvgMetrics!.comments != null ? (realAvgMetrics!.reactions + realAvgMetrics!.comments).toFixed(1) : "—"} hint="per post, real data" />
+                </div>
+
+                {realBestPost && (
+                  <div className="panel">
+                    <h2>Best post in window</h2>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "flex-start" }}>
+                      <div style={{ flex: 1, minWidth: 260 }}>
+                        <span className="tag">{realBestPost._internal_format || realBestPost.type}</span>
+                        <p style={{ marginTop: 8 }}>{realBestPost.caption ? (realBestPost.caption.length > 160 ? realBestPost.caption.slice(0, 160) + "…" : realBestPost.caption) : <span className="small" style={{ color: "var(--text-2)" }}>(no caption / media-only)</span>}</p>
+                        <a className="small mono" href={`https://www.linkedin.com/feed/update/${realBestPost.urn}`} target="_blank" rel="noopener noreferrer">{realBestPost.published} · open on LinkedIn</a>
+                      </div>
+                      <div className="mono small" style={{ textAlign: "right", color: "var(--text-2)" }}>
+                        <div>{realBestPost.impressions} impressions</div>
+                        <div>{realBestPost.clicks} clicks · {realBestPost.ctr} CTR</div>
+                        <div>{realBestPost.reactions} reactions · {realBestPost.comments} comments</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="panel">
+                  <h2>Best time to publish</h2>
+                  <p className="small">Avg impressions per real post, grouped by when it actually went out (UTC).</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 12 }}>
+                    <div>
+                      <h3>By time of day</h3>
+                      {realByHour.filter((b) => b.n > 0).length === 0 ? <div className="empty">No data in window.</div> : realByHour.map((b) => (
+                        b.n > 0 && (
+                          <div key={b.label} style={{ marginBottom: 8 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              <span className="small">{b.label}</span>
+                              <span className="mono small" style={{ color: "var(--teal)" }}>{b.avgImpressions != null ? Math.round(b.avgImpressions) : "—"} avg · n={b.n}</span>
+                            </div>
+                            <div style={{ background: "var(--bg-2)", borderRadius: 3, height: 6, marginTop: 3 }}>
+                              <div style={{ width: `${Math.min(100, ((b.avgImpressions ?? 0) / (realByHour[0].avgImpressions || 1)) * 100)}%`, background: "var(--teal)", height: 6, borderRadius: 3 }} />
+                            </div>
+                          </div>
+                        )
+                      ))}
+                    </div>
+                    <div>
+                      <h3>By day of week</h3>
+                      {realByWeekday.filter((d) => d.n > 0).length === 0 ? <div className="empty">No data in window.</div> : realByWeekday.map((d) => (
+                        d.n > 0 && (
+                          <div key={d.label} style={{ marginBottom: 8 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              <span className="small">{d.label}</span>
+                              <span className="mono small" style={{ color: "var(--teal)" }}>{d.avgImpressions != null ? Math.round(d.avgImpressions) : "—"} avg · n={d.n}</span>
+                            </div>
+                            <div style={{ background: "var(--bg-2)", borderRadius: 3, height: 6, marginTop: 3 }}>
+                              <div style={{ width: `${Math.min(100, ((d.avgImpressions ?? 0) / (realByWeekday[0].avgImpressions || 1)) * 100)}%`, background: "var(--teal)", height: 6, borderRadius: 3 }} />
+                            </div>
+                          </div>
+                        )
+                      ))}
+                    </div>
+                  </div>
+                  <p className="small" style={{ marginTop: 10, color: "var(--text-2)" }}>
+                    {`Small sample — ${realAvgMetrics!.n} real post${realAvgMetrics!.n === 1 ? "" : "s"} in this window. Treat as a directional signal, not a strong statistical result.`}
+                  </p>
+                </div>
+
+                <div className="panel">
+                  <h2>Best post type</h2>
+                  <p className="small">
+                    {`${realByFormat.coverage.matched} of ${realByFormat.coverage.total} posts matched back to our own format taxonomy; the rest fall back to LinkedIn's own content-type label.`}
+                  </p>
+                  <table>
+                    <thead><tr><th>Format</th><th>Posts</th><th>Avg impressions</th></tr></thead>
+                    <tbody>
+                      {realByFormat.rows.map((r) => (
+                        <tr key={r.format}>
+                          <td><span className="tag">{r.format}</span></td>
+                          <td className="mono">{r.n}</td>
+                          <td className="mono" style={{ color: "var(--teal)" }}>{r.avgImpressions != null ? Math.round(r.avgImpressions) : "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="panel">
+                  <h2>Best angle</h2>
+                  {realByAngle.coverage.matched === 0 ? (
+                    <div className="empty">
+                      No posts in this window have a traceable pain-class lineage yet (bank_id → li_post_bank). This isn&rsquo;t buildable as a real breakdown until more published posts carry that link — showing nothing here rather than a misleading guess.
+                    </div>
+                  ) : (
+                    <>
+                      <p className="small" style={{ color: "var(--red)" }}>
+                        {`Low sample: only ${realByAngle.coverage.matched} of ${realByAngle.coverage.total} posts in this window trace back to a classified angle. Directional only.`}
+                      </p>
+                      <table>
+                        <thead><tr><th>Angle</th><th>Posts</th><th>Avg impressions</th></tr></thead>
+                        <tbody>
+                          {realByAngle.rows.map((r) => (
+                            <tr key={r.cls}>
+                              <td><span className="tag" style={{ color: PAIN_CLASS_LABEL[r.cls]?.color, borderColor: PAIN_CLASS_LABEL[r.cls]?.color }}>{PAIN_CLASS_LABEL[r.cls]?.label || r.cls}</span></td>
+                              <td className="mono">{r.n}</td>
+                              <td className="mono" style={{ color: "var(--teal)" }}>{r.avgImpressions != null ? Math.round(r.avgImpressions) : "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+
+            <h2 style={{ marginTop: 8, marginBottom: 12, color: "var(--text-2)", fontSize: 13, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Internal capture-pipeline health · not LinkedIn performance data
+            </h2>
+
             <div className="stat-grid">
               <Stat label="Avg EQS (per post)" value={avgEqsPerPost != null ? avgEqsPerPost.toFixed(1) : "—"} hint={`across ${healthCounts.live + healthCounts.pending} real posts, not per-row`} />
               <Stat label="Avg CTR" value={avgCtrPerPost != null ? avgCtrPerPost.toFixed(1) + "%" : "—"} hint="clicks / impressions, live posts only" />
@@ -734,13 +1027,16 @@ Stuck = posts still showing not_yet_in_api past the real 48h ingestion window, a
           <>
             <div className="panel">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
-                <h2 style={{ margin: 0 }}>CelesteOS Page Analytics · live from LinkedIn (DMA API)</h2>
+                <h2 style={{ margin: 0 }}>Raw LinkedIn feed · full history</h2>
                 <button className="ghost" onClick={() => loadPages(true)} disabled={pagesLoading}>
                   {pagesLoading ? "Fetching…" : "Refresh from LinkedIn"}
                 </button>
               </div>
+              <p className="small" style={{ marginTop: 8 }}>
+                Every post on record, unfiltered. For time-windowed breakdowns (best time/day/type/angle) see the Analytics tab.
+              </p>
               {pageReport && (
-                <p className="small" style={{ marginTop: 8 }}>
+                <p className="small" style={{ marginTop: 4 }}>
                   fetched {fmtDate(pageReport.fetched_at)} · source: {pageReport._source}
                   {pageReport._age_min != null ? ` · ${pageReport._age_min}m old` : ""} · org {pageReport.org}
                 </p>
@@ -756,7 +1052,7 @@ Stuck = posts still showing not_yet_in_api past the real 48h ingestion window, a
                     LinkedIn fetch failed: {pagesError}
                   </div>
                   <p className="small" style={{ textAlign: "center", marginTop: 8 }}>
-                    This has never successfully cached a result yet. <button className="ghost" onClick={() => loadPages(true)}>Retry</button>
+                    <button className="ghost" onClick={() => loadPages(true)}>Retry</button>
                   </p>
                 </div>
               ) : (
@@ -769,27 +1065,6 @@ Stuck = posts still showing not_yet_in_api past the real 48h ingestion window, a
                   <Stat label="Visitors 360d" value={pageReport.visitors_360d ?? "—"} hint="unique page visitors" />
                   <Stat label="Followers 360d" value={pageReport.followers_360d ?? "0*"} hint="*member opt-in gated" />
                   <Stat label="Top post impr." value={pageReport.posts[0]?.impressions ?? 0} hint={pageReport.posts[0]?.type ?? ""} />
-                </div>
-
-                <div className="panel">
-                  <h2>Segment by post type (reverse-engineer what works)</h2>
-                  <table>
-                    <thead><tr><th>Type</th><th>Posts</th><th>Total impr.</th><th>Avg impr./post</th><th>Total clicks</th><th>Total reactions</th></tr></thead>
-                    <tbody>
-                      {Object.entries(pageReport.by_type)
-                        .sort((a, b) => (b[1].impressions / b[1].n) - (a[1].impressions / a[1].n))
-                        .map(([t, v]) => (
-                          <tr key={t}>
-                            <td><span className="tag">{t}</span></td>
-                            <td className="mono">{v.n}</td>
-                            <td className="mono">{v.impressions}</td>
-                            <td className="mono" style={{ color: "var(--teal)" }}>{Math.round(v.impressions / v.n)}</td>
-                            <td className="mono">{v.clicks}</td>
-                            <td className="mono">{v.reactions}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
                 </div>
 
                 <div className="panel">
