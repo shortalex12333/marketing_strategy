@@ -1177,7 +1177,18 @@ function BoardCard({
   const w = BOARD_WEIGHT[weight] || { label: weight || "—", color: "var(--text-2)" };
   const st = (it.approval_status || "").toLowerCase();
   const approved = st === "approved", denied = st === "denied", posted = st.startsWith("posted");
-  const thumb = it.storage_slug ? `${CAROUSEL_BUCKET_URL}/${it.storage_slug}/slide_01.png` : null;
+  // Two rendering conventions exist in storage, depending on which batch
+  // produced the draft: carousels (pdf_url ending .pdf) render per-page
+  // slide_NN.png alongside the PDF, so slide_01.png is the right preview.
+  // Single-image formats (branded/chart, pdf_url ending .png) render ONE
+  // file directly at pdf_url — there is no slide_01.png for those, so
+  // hardcoding it 404's. Confirmed live 2026-07-05: every fresh-branded/
+  // fresh-chart post showed a broken-image icon on Board because of this.
+  const thumb = it.pdf_url && !it.pdf_url.endsWith(".pdf")
+    ? it.pdf_url
+    : it.storage_slug
+      ? `${CAROUSEL_BUCKET_URL}/${it.storage_slug}/slide_01.png`
+      : null;
   const dt = new Date(it.date + "T00:00:00");
   const dayLabel = isNaN(dt.getTime()) ? it.date : dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
   return (
