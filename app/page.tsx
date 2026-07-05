@@ -88,6 +88,7 @@ interface ScheduleItem {
   doc_title?: string;
   pdf_url?: string | null;
   storage_slug?: string | null;
+  created_at?: string | null;
 }
 
 interface ScheduleResponse {
@@ -886,6 +887,71 @@ const BOARD_WEIGHT: Record<string, { label: string; color: string }> = {
 
 /** Simple scannable content board: one colour-coded tile per scheduled post,
  *  with media thumbnail, the angle, time-of-day, and Approve / Deny. */
+function BoardCard({
+  it, onApprove, onDeny, onOpen,
+}: {
+  it: ScheduleItem;
+  onApprove: (id: string) => void;
+  onDeny: (id: string) => void;
+  onOpen: (id: string) => void;
+}) {
+  const fmt = BOARD_FORMAT[it.format] || { label: it.format, color: "var(--text-2)" };
+  const parts = (it.rationale || "").split(" · ");
+  const weight = (parts[0] || "").trim().toLowerCase();
+  const chapter = (parts[1] || "").trim();
+  const w = BOARD_WEIGHT[weight] || { label: weight || "—", color: "var(--text-2)" };
+  const st = (it.approval_status || "").toLowerCase();
+  const approved = st === "approved", denied = st === "denied", posted = st.startsWith("posted");
+  const thumb = it.storage_slug ? `${CAROUSEL_BUCKET_URL}/${it.storage_slug}/slide_01.png` : null;
+  const dt = new Date(it.date + "T00:00:00");
+  const dayLabel = isNaN(dt.getTime()) ? it.date : dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  return (
+    <div style={{
+      border: "1px solid var(--border)", borderTop: `3px solid ${fmt.color}`, borderRadius: 8,
+      overflow: "hidden", background: "var(--bg-1)", opacity: denied ? 0.55 : 1,
+    }}>
+      <div onClick={() => onOpen(it.post_id)} title="Open full draft" style={{
+        cursor: "pointer", height: 118, background: thumb ? "#0a0a0a" : `${fmt.color}1f`,
+        display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
+      }}>
+        {thumb ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={thumb} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <span className="mono" style={{ color: fmt.color, fontSize: 13, letterSpacing: 1 }}>{fmt.label.toUpperCase()}</span>
+        )}
+        <span className="mono" style={{ position: "absolute", top: 6, left: 6, fontSize: 10, background: "rgba(0,0,0,0.6)", color: fmt.color, padding: "2px 7px", borderRadius: 4 }}>{fmt.label}</span>
+      </div>
+      <div style={{ padding: "9px 11px" }}>
+        <div className="mono" style={{ fontSize: 10, color: "var(--text-2)" }}>{dayLabel} · {(it.time_utc || "").slice(0, 5)}</div>
+        <div style={{ fontSize: 12.5, lineHeight: 1.35, margin: "5px 0 9px", height: 51, overflow: "hidden" }}>{it.hook}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 9 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: w.color, flexShrink: 0 }} />
+          <span className="mono" style={{ fontSize: 10, color: "var(--text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {w.label}{chapter ? ` · ${chapter}` : ""}
+          </span>
+        </div>
+        {posted ? (
+          <span className="tag" style={{ color: "var(--green)", borderColor: "rgba(74,154,106,0.45)" }}>✓ Posted</span>
+        ) : (
+          <div style={{ display: "flex", gap: 6 }}>
+            <button onClick={() => onApprove(it.post_id)} disabled={approved} style={{
+              flex: 1, padding: "6px 0", fontSize: 12, borderRadius: 5,
+              background: approved ? "rgba(74,154,106,0.3)" : "rgba(74,154,106,0.12)",
+              border: "1px solid rgba(74,154,106,0.45)", color: "var(--green)", cursor: approved ? "default" : "pointer",
+            }}>{approved ? "✓ Approved" : "Approve"}</button>
+            <button onClick={() => onDeny(it.post_id)} disabled={denied} style={{
+              flex: 1, padding: "6px 0", fontSize: 12, borderRadius: 5,
+              background: denied ? "rgba(224,99,95,0.3)" : "rgba(224,99,95,0.10)",
+              border: "1px solid rgba(224,99,95,0.4)", color: "#E0635F", cursor: denied ? "default" : "pointer",
+            }}>{denied ? "✗ Denied" : "Deny"}</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Board({
   items, onApprove, onDeny, onOpen,
 }: {
@@ -894,19 +960,36 @@ function Board({
   onDeny: (id: string) => void;
   onOpen: (id: string) => void;
 }) {
-  const sorted = [...items].sort((a, b) => (a.date + a.time_utc).localeCompare(b.date + b.time_utc));
   const counts = { approved: 0, denied: 0, posted: 0, pending: 0 };
-  for (const it of sorted) {
+  for (const it of items) {
     const s = (it.approval_status || "").toLowerCase();
     if (s.startsWith("posted")) counts.posted++;
     else if (s === "approved") counts.approved++;
     else if (s === "denied") counts.denied++;
     else counts.pending++;
   }
+
+  // A draft's schedule date is a placeholder slot assigned at staging time —
+  // it says nothing about how urgently it needs YOUR review. Sorting the
+  // whole board chronologically buries brand-new batches behind months of
+  // already-decided content (confirmed 2026-07-05: 50 fresh drafts, incl.
+  // every chart post, sat behind 67 other schedule rows, invisible on a
+  // top-down scan). Needs-review surfaces first, newest-created first;
+  // already-decided content keeps the old chronological-by-post-date sort.
+  const needsReview = items
+    .filter((it) => {
+      const s = (it.approval_status || "").toLowerCase();
+      return s !== "approved" && s !== "denied" && !s.startsWith("posted");
+    })
+    .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+  const decided = items
+    .filter((it) => !needsReview.includes(it))
+    .sort((a, b) => (a.date + a.time_utc).localeCompare(b.date + b.time_utc));
+
   return (
     <div className="panel">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
-        <h2 style={{ margin: 0 }}>Content board · {sorted.length} posts</h2>
+        <h2 style={{ margin: 0 }}>Content board · {items.length} posts</h2>
         <div className="mono small" style={{ color: "var(--text-2)" }}>
           {counts.pending} pending · <span style={{ color: "var(--green)" }}>{counts.approved} approved</span> · <span style={{ color: "#E0635F" }}>{counts.denied} denied</span> · {counts.posted} posted
         </div>
@@ -914,64 +997,23 @@ function Board({
       <p className="small" style={{ color: "var(--text-2)" }}>
         Colour bar = post type. Coloured dot = the angle (painkiller / objection / vitamin). Scan, then Approve or Deny each post.
       </p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(225px, 1fr))", gap: 12, marginTop: 14 }}>
-        {sorted.map((it) => {
-          const fmt = BOARD_FORMAT[it.format] || { label: it.format, color: "var(--text-2)" };
-          const parts = (it.rationale || "").split(" · ");
-          const weight = (parts[0] || "").trim().toLowerCase();
-          const chapter = (parts[1] || "").trim();
-          const w = BOARD_WEIGHT[weight] || { label: weight || "—", color: "var(--text-2)" };
-          const st = (it.approval_status || "").toLowerCase();
-          const approved = st === "approved", denied = st === "denied", posted = st.startsWith("posted");
-          const thumb = it.storage_slug ? `${CAROUSEL_BUCKET_URL}/${it.storage_slug}/slide_01.png` : null;
-          const dt = new Date(it.date + "T00:00:00");
-          const dayLabel = isNaN(dt.getTime()) ? it.date : dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-          return (
-            <div key={it.post_id} style={{
-              border: "1px solid var(--border)", borderTop: `3px solid ${fmt.color}`, borderRadius: 8,
-              overflow: "hidden", background: "var(--bg-1)", opacity: denied ? 0.55 : 1,
-            }}>
-              <div onClick={() => onOpen(it.post_id)} title="Open full draft" style={{
-                cursor: "pointer", height: 118, background: thumb ? "#0a0a0a" : `${fmt.color}1f`,
-                display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
-              }}>
-                {thumb ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={thumb} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                  <span className="mono" style={{ color: fmt.color, fontSize: 13, letterSpacing: 1 }}>{fmt.label.toUpperCase()}</span>
-                )}
-                <span className="mono" style={{ position: "absolute", top: 6, left: 6, fontSize: 10, background: "rgba(0,0,0,0.6)", color: fmt.color, padding: "2px 7px", borderRadius: 4 }}>{fmt.label}</span>
-              </div>
-              <div style={{ padding: "9px 11px" }}>
-                <div className="mono" style={{ fontSize: 10, color: "var(--text-2)" }}>{dayLabel} · {(it.time_utc || "").slice(0, 5)}</div>
-                <div style={{ fontSize: 12.5, lineHeight: 1.35, margin: "5px 0 9px", height: 51, overflow: "hidden" }}>{it.hook}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 9 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: w.color, flexShrink: 0 }} />
-                  <span className="mono" style={{ fontSize: 10, color: "var(--text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {w.label}{chapter ? ` · ${chapter}` : ""}
-                  </span>
-                </div>
-                {posted ? (
-                  <span className="tag" style={{ color: "var(--green)", borderColor: "rgba(74,154,106,0.45)" }}>✓ Posted</span>
-                ) : (
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={() => onApprove(it.post_id)} disabled={approved} style={{
-                      flex: 1, padding: "6px 0", fontSize: 12, borderRadius: 5,
-                      background: approved ? "rgba(74,154,106,0.3)" : "rgba(74,154,106,0.12)",
-                      border: "1px solid rgba(74,154,106,0.45)", color: "var(--green)", cursor: approved ? "default" : "pointer",
-                    }}>{approved ? "✓ Approved" : "Approve"}</button>
-                    <button onClick={() => onDeny(it.post_id)} disabled={denied} style={{
-                      flex: 1, padding: "6px 0", fontSize: 12, borderRadius: 5,
-                      background: denied ? "rgba(224,99,95,0.3)" : "rgba(224,99,95,0.10)",
-                      border: "1px solid rgba(224,99,95,0.4)", color: "#E0635F", cursor: denied ? "default" : "pointer",
-                    }}>{denied ? "✗ Denied" : "Deny"}</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+
+      {needsReview.length > 0 && (
+        <>
+          <h3 style={{ marginTop: 18, marginBottom: 4 }}>Needs your review · {needsReview.length} · newest first</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(225px, 1fr))", gap: 12, marginTop: 10 }}>
+            {needsReview.map((it) => (
+              <BoardCard key={it.post_id} it={it} onApprove={onApprove} onDeny={onDeny} onOpen={onOpen} />
+            ))}
+          </div>
+        </>
+      )}
+
+      <h3 style={{ marginTop: 22, marginBottom: 4 }}>Scheduled · {decided.length}</h3>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(225px, 1fr))", gap: 12, marginTop: 10 }}>
+        {decided.map((it) => (
+          <BoardCard key={it.post_id} it={it} onApprove={onApprove} onDeny={onDeny} onOpen={onOpen} />
+        ))}
       </div>
     </div>
   );
