@@ -1238,6 +1238,27 @@ function BoardCard({
   );
 }
 
+// Coarse post-type bucket for filtering (Carousel / Text / Image / Poll / Video),
+// mapped from the raw slot_label so the type buttons stay clean.
+function boardTypeBucket(format: string): string {
+  return BOARD_FORMAT[format]?.label || (format ? format[0].toUpperCase() + format.slice(1) : "Other");
+}
+function boardAngle(rationale: string): string {
+  const w = (rationale || "").split(" · ")[0].trim().toLowerCase();
+  return (["painkiller", "objection", "vitamin"].includes(w)) ? w : "";
+}
+// Status now carries suffixes ("denied · fabricated…", "shelved · redundant…",
+// "posted 2026-07-05"), so exact-match checks silently miss them. Bucket by prefix.
+type BoardStatus = "posted" | "approved" | "denied" | "shelved" | "pending";
+function boardStatus(raw: string): BoardStatus {
+  const s = (raw || "").toLowerCase();
+  if (s.startsWith("posted")) return "posted";
+  if (s === "approved") return "approved";
+  if (s.startsWith("denied")) return "denied";
+  if (s.startsWith("shelved") || s.startsWith("killed")) return "shelved";
+  return "pending"; // awaiting CEO / planned / draft
+}
+
 function Board({
   items, onApprove, onDeny, onOpen,
 }: {
@@ -1246,43 +1267,81 @@ function Board({
   onDeny: (id: string) => void;
   onOpen: (id: string) => void;
 }) {
-  const counts = { approved: 0, denied: 0, posted: 0, pending: 0 };
-  for (const it of items) {
-    const s = (it.approval_status || "").toLowerCase();
-    if (s.startsWith("posted")) counts.posted++;
-    else if (s === "approved") counts.approved++;
-    else if (s === "denied") counts.denied++;
-    else counts.pending++;
-  }
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [angleFilter, setAngleFilter] = useState<string>("all");
 
-  // A draft's schedule date is a placeholder slot assigned at staging time —
-  // it says nothing about how urgently it needs YOUR review. Sorting the
-  // whole board chronologically buries brand-new batches behind months of
-  // already-decided content (confirmed 2026-07-05: 50 fresh drafts, incl.
-  // every chart post, sat behind 67 other schedule rows, invisible on a
-  // top-down scan). Needs-review surfaces first, newest-created first;
-  // already-decided content keeps the old chronological-by-post-date sort.
-  const needsReview = items
-    .filter((it) => {
-      const s = (it.approval_status || "").toLowerCase();
-      return s !== "approved" && s !== "denied" && !s.startsWith("posted");
-    })
+  const counts = { approved: 0, denied: 0, shelved: 0, posted: 0, pending: 0 };
+  for (const it of items) counts[boardStatus(it.approval_status)]++;
+
+  // Denied AND shelved posts drop OFF the board — they have no upcoming slot and
+  // belong in Archive. (This clears the 15 killed chart posts + the 42 audit-cut
+  // redundant posts + the 34 shelved polls that were otherwise leaking onto the
+  // board as false "pending". 2026-07-05.)
+  const live = items.filter((it) => {
+    const b = boardStatus(it.approval_status);
+    return b !== "denied" && b !== "shelved";
+  });
+
+  // Filter controls: post-type buttons + angle dropdown.
+  const typeBuckets = Array.from(new Set(live.map((it) => boardTypeBucket(it.format)))).sort();
+  const angleBuckets = Array.from(new Set(live.map((it) => boardAngle(it.rationale)).filter(Boolean))).sort();
+  const filtered = live.filter((it) => {
+    if (typeFilter !== "all" && boardTypeBucket(it.format) !== typeFilter) return false;
+    if (angleFilter !== "all" && boardAngle(it.rationale) !== angleFilter) return false;
+    return true;
+  });
+
+  // A draft's schedule date is a placeholder slot assigned at staging time — it
+  // says nothing about review urgency. Needs-review surfaces first (newest-created
+  // first); scheduled (approved + posted) keeps the chronological sort.
+  const needsReview = filtered
+    .filter((it) => boardStatus(it.approval_status) === "pending")
     .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
-  const decided = items
+  const decided = filtered
     .filter((it) => !needsReview.includes(it))
     .sort((a, b) => (a.date + a.time_utc).localeCompare(b.date + b.time_utc));
+
+  const ANGLE_COLOR: Record<string, string> = { painkiller: "#E0635F", objection: "#C8A85C", vitamin: "#6FBF8B" };
 
   return (
     <div className="panel">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
-        <h2 style={{ margin: 0 }}>Content board · {items.length} posts</h2>
+        <h2 style={{ margin: 0 }}>Content board · {live.length} posts</h2>
         <div className="mono small" style={{ color: "var(--text-2)" }}>
-          {counts.pending} pending · <span style={{ color: "var(--green)" }}>{counts.approved} approved</span> · <span style={{ color: "#E0635F" }}>{counts.denied} denied</span> · {counts.posted} posted
+          {counts.pending} pending · <span style={{ color: "var(--green)" }}>{counts.approved} approved</span> · {counts.posted} posted · <span style={{ color: "var(--text-2)" }}>{counts.denied + counts.shelved} denied/shelved (in Archive)</span>
         </div>
       </div>
       <p className="small" style={{ color: "var(--text-2)" }}>
         Colour bar = post type. Coloured dot = the angle (painkiller / objection / vitamin). Scan, then Approve or Deny each post.
       </p>
+
+      {/* Filters: type buttons + angle dropdown */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginTop: 14, paddingBottom: 14, borderBottom: "1px solid var(--border)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <span className="small" style={{ color: "var(--text-2)", marginRight: 2 }}>Type</span>
+          <button className={typeFilter === "all" ? "" : "ghost"} onClick={() => setTypeFilter("all")} style={{ padding: "5px 12px", fontSize: 12 }}>All</button>
+          {typeBuckets.map((t) => (
+            <button key={t} className={typeFilter === t ? "" : "ghost"} onClick={() => setTypeFilter(t)} style={{ padding: "5px 12px", fontSize: 12 }}>{t}</button>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span className="small" style={{ color: "var(--text-2)" }}>Angle</span>
+          <select value={angleFilter} onChange={(e) => setAngleFilter(e.target.value)} style={{ padding: "6px 10px", fontSize: 13 }}>
+            <option value="all">All angles</option>
+            {angleBuckets.map((a) => (
+              <option key={a} value={a}>{a[0].toUpperCase() + a.slice(1)}</option>
+            ))}
+          </select>
+          {angleFilter !== "all" && (
+            <span style={{ width: 9, height: 9, borderRadius: "50%", background: ANGLE_COLOR[angleFilter] || "var(--text-2)", display: "inline-block" }} />
+          )}
+        </div>
+        {(typeFilter !== "all" || angleFilter !== "all") && (
+          <button className="ghost" onClick={() => { setTypeFilter("all"); setAngleFilter("all"); }} style={{ padding: "5px 12px", fontSize: 12 }}>
+            Clear · {filtered.length} shown
+          </button>
+        )}
+      </div>
 
       {needsReview.length > 0 && (
         <>
@@ -1301,6 +1360,7 @@ function Board({
           <BoardCard key={it.post_id} it={it} onApprove={onApprove} onDeny={onDeny} onOpen={onOpen} />
         ))}
       </div>
+      {filtered.length === 0 && <div className="empty">No posts match this filter.</div>}
     </div>
   );
 }
